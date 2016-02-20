@@ -126,7 +126,7 @@ class O3_ARM_v7a_3(DerivO3CPU):
     iewToRenameDelay = 1
     commitToRenameDelay = 1
     commitToIEWDelay = 1
-    fetchWidth = 3
+    fetchWidth = 8
     fetchBufferSize = 16
     fetchToDecodeDelay = 3
     decodeWidth = 3
