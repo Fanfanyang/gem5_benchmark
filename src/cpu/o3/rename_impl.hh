@@ -537,7 +537,7 @@ DefaultRename<Impl>::renameInsts(ThreadID tid)
         if ((free_rob_entries <= 0)||(free_iq_entries <= 0)||(calcFreeLQEntries(tid) <= 0)||(calcFreeSQEntries(tid) <= 0)) {
             return;
         }
-        renameIdle_starved += renameWidth;
+        renameIdle_starved += issueWidth;
 
         return;
     } else if (renameStatus[tid] == Unblocking) {
@@ -766,8 +766,8 @@ DefaultRename<Impl>::renameInsts(ThreadID tid)
         //-------------------------------------------------------------------------------
         
         assert(renamed_insts <= renameWidth);
-        renameRun_starved += (renameWidth-renamed_insts);
-        //renameRun_starved += (issueWidth-renamed_insts);
+        //renameRun_starved += (renameWidth-renamed_insts);
+        renameRun_starved += (issueWidth-renamed_insts);
     }
 
     if (blockThisCycle) {
