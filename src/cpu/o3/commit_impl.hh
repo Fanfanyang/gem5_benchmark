@@ -345,13 +345,13 @@ DefaultCommit<Impl>::regStats()
     YangAverageROBInsts.ysubnames(inst_types);      // for renaming
     
     MemCycleMix
-        .init(numThreads,4)
+        .init(numThreads,3)
         .name(name() + ".MemCycleMix.yang")
         .desc("Cycles mix from entering IQ to Commit")
         .flags(total | pdf | dist)
         ;
     
-    const char* cycle_types[] = {"Dependency","MemAccess","PipeRoutine","WaitCommit"};
+    const char* cycle_types[] = {"Dependency","MemAccess","PipeRoutine"};
     MemCycleMix.ysubnames(cycle_types);      // for renaming
     
     MemBlockCycle
@@ -1595,6 +1595,9 @@ DefaultCommit<Impl>::markCompletedInsts()
             
             // Mark the instruction as ready to commit.
             fromIEW->insts[inst_num]->setCanCommit();
+            
+            if ((fromIEW->insts[inst_num]->isStore())&&(fromIEW->insts[inst_num]->BlockROBFlag == 1))
+                cout << fromIEW->insts[inst_num]->seqNum << endl;
         }
     }
 }
@@ -1629,25 +1632,28 @@ DefaultCommit<Impl>::updateComInstStats(DynInstPtr &inst)
     if (inst->isMemRef())
     {
         if (inst->BlockROBFlag == 1) {
-        if ((inst->IssuedCycle == -1)||(inst->EnterIQCycle == -1)||(inst->CompleteCycle == -1)) {
-            MemCycleMix[tid][0] += 0;
-            MemCycleMix[tid][1] += 0;
+            if ((inst->IssuedCycle == -1)||(inst->EnterIQCycle == -1)) {
+                MemCycleMix[tid][0] += 0;
+                MemCycleMix[tid][1] += 0;
+            }
+            else {
+                if (inst->isLoad())
+                    pipeline_rountine = 2;
+                else if (inst->isStore())
+                    pipeline_rountine = 1;
+            
+                assert(inst->CompleteCycle - inst->IssuedCycle > pipeline_rountine);
+            
+                MemCycleMix[tid][0] += (inst->IssuedCycle - inst->EnterIQCycle);
+                MemCycleMix[tid][1] += (inst->CommitCycle - inst->IssuedCycle - pipeline_rountine);
+                MemCycleMix[tid][2] += pipeline_rountine;            }
+        }
+        
+        if ((inst->IssuedCycle == -1)||(inst->EnterIQCycle == -1)) {
             MemBlockCycle[tid][0] += 0;
             MemBlockCycle[tid][1] += 0;
         }
         else {
-            if (inst->isLoad())
-                pipeline_rountine = 2;
-            else if (inst->isStore())
-                pipeline_rountine = 1;
-            
-            assert(inst->CompleteCycle - inst->IssuedCycle > pipeline_rountine);
-            
-            MemCycleMix[tid][0] += (inst->IssuedCycle - inst->EnterIQCycle);
-            MemCycleMix[tid][1] += (inst->CompleteCycle - inst->IssuedCycle - pipeline_rountine);
-            MemCycleMix[tid][2] += pipeline_rountine;
-            MemCycleMix[tid][3] += (inst->CommitCycle - inst->CompleteCycle);
-            
             // assume the rob head is 1 cycle ahead of comming out of commit stage
             if (inst-> ROBHeadCycle == -1) {
                 MemBlockCycle[tid][0] += (inst->CommitCycle - inst->EnterIQCycle) - 1;
@@ -1657,7 +1663,6 @@ DefaultCommit<Impl>::updateComInstStats(DynInstPtr &inst)
                 MemBlockCycle[tid][0] += (inst->ROBHeadCycle - inst->EnterIQCycle);
                 MemBlockCycle[tid][1] += (inst->CommitCycle - inst->ROBHeadCycle);
             }
-        }
         }
     }
     
