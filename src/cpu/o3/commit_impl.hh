@@ -1596,8 +1596,8 @@ DefaultCommit<Impl>::markCompletedInsts()
             // Mark the instruction as ready to commit.
             fromIEW->insts[inst_num]->setCanCommit();
             
-            if ((fromIEW->insts[inst_num]->isStore())&&(fromIEW->insts[inst_num]->BlockROBFlag == 1))
-                cout << fromIEW->insts[inst_num]->seqNum << endl;
+            //if ((fromIEW->insts[inst_num]->isStore())&&(fromIEW->insts[inst_num]->BlockROBFlag == 1))
+            //    cout << fromIEW->insts[inst_num]->seqNum << endl;
         }
     }
 }
