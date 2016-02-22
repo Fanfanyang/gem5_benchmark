@@ -983,6 +983,14 @@ DefaultCommit<Impl>::commit()
                     tid,
                     fromIEW->mispredictInst[tid]->instAddr(),
                     fromIEW->squashedSeqNum[tid]);
+                
+                //--------------------------------------------------------------------
+                // PMU issued branch mispredicted recovery cycles, author: Fan Yang
+                //--------------------------------------------------------------------
+                
+                    cpu->pmu.recovery_cycles = curTick()/500 - cpu->pmu.issuedcycle;
+                    cpu->pmu.mispredicted_recover_cycle += cpu->pmu.recovery_cycles;
+                
             } else {
                 DPRINTF(Commit,
                     "[tid:%i]: Squashing due to order violation [sn:%i]\n",

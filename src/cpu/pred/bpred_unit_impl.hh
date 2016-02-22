@@ -127,9 +127,9 @@ BPredUnit::regStats()
     //---------------------------------------------------------------------------------
     
     PMUrecovery
-    .name(name() + ".PMUrecovery.yang")
-    .desc("Recovery cycles for branch misprediction.")
-    ;
+        .name(name() + ".PMUrecovery.yang")
+        .desc("Recovery cycles for branch misprediction.")
+        ;
 }
 
 ProbePoints::PMUUPtr

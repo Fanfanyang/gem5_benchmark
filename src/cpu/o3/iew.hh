@@ -387,6 +387,7 @@ class DefaultIEW
     unsigned dispatchWidth;
 
     /** Width of issue, in instructions. */
+  public:
     unsigned issueWidth;
 
     /** Index into queue of instructions being written back. */

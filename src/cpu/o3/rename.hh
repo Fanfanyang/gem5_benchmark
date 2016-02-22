@@ -512,14 +512,7 @@ class DefaultRename
     Stats::Scalar renamedTempSerializing;
     /** Number of instructions inserted into skid buffers. */
     Stats::Scalar renameSkidInsts;
-    
-    //-------------------------------------------------------------------------------
-    // PMU: Front end instructions not delivered to back end, author: Fan Yang
-    //-------------------------------------------------------------------------------
-    
-    Stats::Scalar renameRun_starved;
-    Stats::Scalar renameIdle_starved;
-    Stats::Formula Uops_not_delivered;
+
 };
 
 #endif // __CPU_O3_RENAME_HH__

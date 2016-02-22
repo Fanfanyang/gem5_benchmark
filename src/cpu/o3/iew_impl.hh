@@ -493,6 +493,12 @@ DefaultIEW<Impl>::squashDueToBranch(DynInstPtr &inst, ThreadID tid)
         toCommit->squash[tid] = true;
         toCommit->squashedSeqNum[tid] = inst->seqNum;
         toCommit->branchTaken[tid] = inst->pcState().branching();
+        
+        //--------------------------------------------------------------------
+        // PMU issued branch mispredicted recovery cycles, author: Fan Yang
+        //--------------------------------------------------------------------
+        
+        cpu->pmu.issuedcycle = inst->IssuedCycle;
 
         TheISA::PCState pc = inst->pcState();
         TheISA::advancePC(pc, inst->staticInst);

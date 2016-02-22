@@ -220,6 +220,41 @@ class FullO3CPU : public BaseO3CPU
     
     DistanceQueue DQ;
     
+    
+    //--------------------------------------------------------------------
+    // PMU, author: Fan Yang
+    //--------------------------------------------------------------------
+    
+    class PMU
+    {
+      public:
+        Stats::Formula workingCycles;
+        Stats::Scalar renameRun_starved;
+        Stats::Scalar renameIdle_starved;
+        Stats::Formula Uops_not_delivered;
+        Stats::Scalar issuedInsts;
+        Stats::Formula insts_issued_not_committed;
+        Stats::Scalar mispredicted_recover_cycle;
+        Stats::Formula FE;
+        Stats::Formula BS;
+        Stats::Formula RE;
+        Stats::Formula BE;
+        //Stats::Vector2d TopDownAnalysis;
+        int issuedcycle;
+        int recovery_cycles;
+        int pipeline_width;
+        
+      public:
+        PMU():issuedcycle(0),recovery_cycles(0),pipeline_width(0)
+        {
+            
+        }
+    };
+    
+    PMU pmu;
+    
+    //Stats::Formula workingCycles;
+    
     //--------------------------------------------------------------------
     // Instruction Type, author: Fan Yang
     //--------------------------------------------------------------------
@@ -887,12 +922,7 @@ class FullO3CPU : public BaseO3CPU
     //number of misc
     Stats::Scalar miscRegfileReads;
     Stats::Scalar miscRegfileWrites;
-    
-    //------------------------------------------------------------------------------
-    // PMU, CPU working cycles, author: Fan Yang
-    //------------------------------------------------------------------------------
-    
-    Stats::Formula workingCycles;
+
 };
 
 #endif // __CPU_O3_CPU_HH__

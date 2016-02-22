@@ -183,27 +183,6 @@ DefaultRename<Impl>::regStats()
         .name(name() + ".fp_rename_lookups")
         .desc("Number of floating rename lookups")
         .prereq(fpRenameLookups);
-    
-    //-------------------------------------------------------------------------------
-    // PMU: Front end instructions not delivered to back end, author: Fan Yang
-    //-------------------------------------------------------------------------------
-    
-    renameIdle_starved
-        .name(name() + ".renameIdle_starved")
-        .desc("Number of slots that front end does not feed enough back end")
-        .prereq(renameIdle_starved);
-    
-    renameRun_starved
-        .name(name() + ".renameRun_starved")
-        .desc("Number of slots that front end does not feed enough back end")
-        .prereq(renameRun_starved);
-    
-    Uops_not_delivered
-        .name(name() + ".Uops_not_delivered.yang")
-        .desc("Number of slots that front end does not feed enough back end")
-        //.precision(6)
-        ;
-    Uops_not_delivered = renameIdle_starved + renameRun_starved;
 }
 
 template <class Impl>
@@ -346,7 +325,7 @@ template <class Impl>
 void
 DefaultRename<Impl>::squash(const InstSeqNum &squash_seq_num, ThreadID tid)
 {
-    DPRINTF(Rename, "[tid:%u]: Squashing instructions.\n",tid);
+    DPRINTF(Rename, "[tid:%u]: Squashing instructions [sn:%i].\n",tid,squash_seq_num);
 
     // Clear the stall signal if rename was blocked or unblocking before.
     // If it still needs to block, the blocking should happen the next
@@ -537,7 +516,7 @@ DefaultRename<Impl>::renameInsts(ThreadID tid)
         if ((free_rob_entries <= 0)||(free_iq_entries <= 0)||(calcFreeLQEntries(tid) <= 0)||(calcFreeSQEntries(tid) <= 0)) {
             return;
         }
-        renameIdle_starved += issueWidth;
+        cpu->pmu.renameIdle_starved += issueWidth;
 
         return;
     } else if (renameStatus[tid] == Unblocking) {
@@ -766,8 +745,7 @@ DefaultRename<Impl>::renameInsts(ThreadID tid)
         //-------------------------------------------------------------------------------
         
         assert(renamed_insts <= renameWidth);
-        //renameRun_starved += (renameWidth-renamed_insts);
-        renameRun_starved += (issueWidth-renamed_insts);
+        cpu->pmu.renameRun_starved += (issueWidth-renamed_insts);
     }
 
     if (blockThisCycle) {

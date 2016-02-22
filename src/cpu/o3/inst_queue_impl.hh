@@ -970,6 +970,8 @@ InstructionQueue<Impl>::scheduleReadyInsts()
 
     numIssuedDist.sample(total_issued);
     iqInstsIssued+= total_issued;
+    
+    cpu->pmu.issuedInsts++;
 
     // If we issued any instructions, tell the CPU we had activity.
     // @todo If the way deferred memory instructions are handeled due to

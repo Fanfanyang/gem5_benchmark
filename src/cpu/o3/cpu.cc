@@ -429,6 +429,7 @@ template <class Impl>
 void
 FullO3CPU<Impl>::regStats()
 {
+    using namespace Stats;
     BaseO3CPU::regStats();    
     // Register any of the O3CPU's stats here.
     timesIdled
@@ -540,11 +541,84 @@ FullO3CPU<Impl>::regStats()
     // PMU, CPU working cycles, author: Fan Yang
     //------------------------------------------------------------------------------
     
-    workingCycles
-        .name(name() + ".workingCycles.yang")
+    pmu.workingCycles
+        .name(name() + ".pmu.workingCycles")
         .desc("CPU cycles that is not idle")
-        .prereq(workingCycles);
-    workingCycles = numCycles - idleCycles;
+        .prereq(pmu.workingCycles);
+    pmu.workingCycles = numCycles - idleCycles;
+    
+    pmu.renameIdle_starved
+        .name(name() + ".pmu.renameIdle_starved")
+        .desc("Number of slots that front end does not feed enough back end")
+        .prereq(pmu.renameIdle_starved);
+    
+    pmu.renameRun_starved
+        .name(name() + ".pmu.renameRun_starved")
+        .desc("Number of slots that front end does not feed enough back end")
+        .prereq(pmu.renameRun_starved);
+    
+    pmu.Uops_not_delivered
+        .name(name() + ".pmu.Uops_not_delivered")
+        .desc("Number of slots that front end does not feed enough back end")
+        //.precision(6)
+        ;
+    pmu.Uops_not_delivered = pmu.renameIdle_starved + pmu.renameRun_starved;    // computed in rename
+    
+    pmu.issuedInsts
+        .name(name() + ".pmu.issuedInsts")
+        .desc("Number of instructions issued")
+        ;
+    
+    pmu.insts_issued_not_committed
+        .name(name() + ".pmu.Insts_issued_not_committed")
+        .desc("Instructions issued yet not committed")
+        ;
+        //.precision(6);
+    pmu.insts_issued_not_committed = pmu.issuedInsts - committedInsts;
+    
+    pmu.mispredicted_recover_cycle
+        .name(name() + ".pmu.mispredicted_recover_cycle")
+        .desc("Recovery cycles due to issued branch misprediction")
+        .prereq(pmu.mispredicted_recover_cycle)
+        ;
+    pmu.pipeline_width = iew.issueWidth;
+    
+    pmu.FE = pmu.Uops_not_delivered/(pmu.workingCycles*(pmu.pipeline_width))*100;
+    pmu.BS = (pmu.insts_issued_not_committed + (pmu.pipeline_width)*(pmu.mispredicted_recover_cycle))/(pmu.workingCycles*(pmu.pipeline_width))*100;
+    pmu.RE = committedOps/(pmu.workingCycles*(pmu.pipeline_width))*100;
+    pmu.BE = 100 - (pmu.FE + pmu.BS + pmu.RE);
+    
+    pmu.FE
+        .name(name() + ".pmu.FE")
+        .desc("FE")
+        ;
+    pmu.BS
+        .name(name() + ".pmu.BS")
+        .desc("BS")
+        ;
+    pmu.RE
+        .name(name() + ".pmu.RE")
+        .desc("RE")
+        ;
+    pmu.BE
+        .name(name() + ".pmu.BE")
+        .desc("BE")
+        ;
+/*
+    pmu.TopDownAnalysis[0][0] = pmu.FE;
+    pmu.TopDownAnalysis[0][1] = pmu.BS;
+    pmu.TopDownAnalysis[0][2] = pmu.RE;
+    pmu.TopDownAnalysis[0][3] = pmu.BE;
+    
+    pmu.TopDownAnalysis
+        .init(1,4)
+        .name(name() + ".pmu.TopDownAnalysis")
+        .desc("Top down analysis")
+        .flags(total | pdf | dist)
+        ;
+    
+    const char* BlockName[] = {"FrontEnd","BadSpecu","Retiring","BackEnd"};
+    pmu.TopDownAnalysis.ysubnames(BlockName);*/
 }
 
 template <class Impl>
