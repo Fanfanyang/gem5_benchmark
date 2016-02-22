@@ -339,6 +339,8 @@ def format ArmPackUnpackSatReverse() {{
                             return new Sqminfy(machInst, rd, rn, rm);
                         } else if (op3 == 0x4) {
                             return new Dqofy(machInst, rd, rn, rm);
+                        } else if (op3 == 0x5) {
+                            return new PmuBarrier(machInst, rd, rn, rm);
                         } else {
                             return new Uxtah(machInst, rd, rn, rm, rotation);
                             //return new Uxtah(machInst, rd, rn, rm);

@@ -121,15 +121,6 @@ BPredUnit::regStats()
         .name(name() + ".RASInCorrect")
         .desc("Number of incorrect RAS predictions.")
         ;
-    
-    //---------------------------------------------------------------------------------
-    // PMU: Counting recovery time for branch misprediction, author: Fan Yang
-    //---------------------------------------------------------------------------------
-    
-    PMUrecovery
-        .name(name() + ".PMUrecovery.yang")
-        .desc("Recovery cycles for branch misprediction.")
-        ;
 }
 
 ProbePoints::PMUUPtr
@@ -400,14 +391,6 @@ BPredUnit::update(const InstSeqNum &done_sn, ThreadID tid)
 {
     DPRINTF(Branch, "[tid:%i]: Committing branches until "
             "[sn:%lli].\n", tid, done_sn);
-
-    //---------------------------------------------------------------------------------
-    // PMU: Counting recovery time for branch misprediction, author: Fan Yang
-    //---------------------------------------------------------------------------------
-    
-    if (sn_tmp == done_sn) {
-        PMUrecovery += (curTick()/500 - StartCycle);
-    }
     
     while (!predHist[tid].empty() &&
            predHist[tid].back().seqNum <= done_sn) {
@@ -482,15 +465,6 @@ BPredUnit::squash(const InstSeqNum &squashed_sn,
 
     DPRINTF(Branch, "[tid:%i]: Squashing from sequence number %i, "
             "setting target to %s.\n", tid, squashed_sn, corrTarget);
-    
-    //---------------------------------------------------------------------------------
-    // PMU: Counting recovery time for branch misprediction, author: Fan Yang
-    //---------------------------------------------------------------------------------
-    
-    if (squashed_sn > sn_tmp) {
-        StartCycle = curTick()/500;
-        sn_tmp = squashed_sn;
-    }
 
     // Squash All Branches AFTER this mispredicted branch
     squash(squashed_sn, tid);

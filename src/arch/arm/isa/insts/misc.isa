@@ -588,6 +588,20 @@ let {{
     decoder_output += RegRegRegOpConstructor.subst(uxtfyIop)
     exec_output += PredOpExecute.subst(uxtfyIop)
 
+    pmubarrierCode = '''
+    Dest = Op2 + Op1 + 3;
+    #include <iostream>
+    using namespace std;
+    //cout << "misc.isa" << " " << Op1 << " " << Op2 << " " << Dest << endl;
+    '''
+    pmubarrierIop = InstObjParams("pmubarrier", "PmuBarrier", "RegRegRegOp",
+                             { "code": pmubarrierCode,
+                               "predicate_test": predicateTest,
+                               "op_class" : "IntAddOp"}, [])
+    header_output += RegRegRegOpDeclare.subst(pmubarrierIop)
+    decoder_output += RegRegRegOpConstructor.subst(pmubarrierIop)
+    exec_output += PredOpExecute.subst(pmubarrierIop)
+
     dqifyCode = '''
     Dest = Op2 + Op1 + 3;
     #include <iostream>

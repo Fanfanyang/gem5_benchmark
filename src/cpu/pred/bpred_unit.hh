@@ -295,13 +295,6 @@ class BPredUnit : public SimObject
     Stats::Scalar usedRAS;
     /** Stat for number of times the RAS is incorrect. */
     Stats::Scalar RASIncorrect;
-
-    //---------------------------------------------------------------------------------
-    // PMU: Counting recovery time for branch misprediction, author: Fan Yang
-    //---------------------------------------------------------------------------------
-    Stats::Scalar PMUrecovery;
-    InstSeqNum sn_tmp = 0;
-    Tick StartCycle = 0;
     
   protected:
     /**
