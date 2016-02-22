@@ -545,7 +545,6 @@ FullO3CPU<Impl>::regStats()
         .name(name() + ".pmu.workingCycles")
         .desc("CPU cycles that is not idle")
         .prereq(pmu.workingCycles);
-    pmu.workingCycles = numCycles - idleCycles;
     
     pmu.renameIdle_starved
         .name(name() + ".pmu.renameIdle_starved")
@@ -569,12 +568,17 @@ FullO3CPU<Impl>::regStats()
         .desc("Number of instructions issued")
         ;
     
+    pmu.committedInsts
+        .name(name() + ".pmu.committedInsts")
+        .desc("Number of instructions committed")
+        ;
+    
     pmu.insts_issued_not_committed
         .name(name() + ".pmu.Insts_issued_not_committed")
         .desc("Instructions issued yet not committed")
         ;
         //.precision(6);
-    pmu.insts_issued_not_committed = pmu.issuedInsts - committedInsts;
+    pmu.insts_issued_not_committed = pmu.issuedInsts - pmu.committedInsts;
     
     pmu.mispredicted_recover_cycle
         .name(name() + ".pmu.mispredicted_recover_cycle")
@@ -585,7 +589,7 @@ FullO3CPU<Impl>::regStats()
     
     pmu.FE = pmu.Uops_not_delivered/(pmu.workingCycles*(pmu.pipeline_width))*100;
     pmu.BS = (pmu.insts_issued_not_committed + (pmu.pipeline_width)*(pmu.mispredicted_recover_cycle))/(pmu.workingCycles*(pmu.pipeline_width))*100;
-    pmu.RE = committedOps/(pmu.workingCycles*(pmu.pipeline_width))*100;
+    pmu.RE = pmu.committedInsts/(pmu.workingCycles*(pmu.pipeline_width))*100;
     pmu.BE = 100 - (pmu.FE + pmu.BS + pmu.RE);
     
     pmu.FE
@@ -630,6 +634,8 @@ FullO3CPU<Impl>::tick()
     assert(getDrainState() != Drainable::Drained);
 
     ++numCycles;
+    if (pmu.flag_start == 1)
+        ++pmu.workingCycles;
     line_trace.Tick++;
     
     //--------------------------------------------------------------------

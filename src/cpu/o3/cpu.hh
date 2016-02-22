@@ -228,11 +228,12 @@ class FullO3CPU : public BaseO3CPU
     class PMU
     {
       public:
-        Stats::Formula workingCycles;
+        Stats::Scalar workingCycles;
         Stats::Scalar renameRun_starved;
         Stats::Scalar renameIdle_starved;
         Stats::Formula Uops_not_delivered;
         Stats::Scalar issuedInsts;
+        Stats::Scalar committedInsts;
         Stats::Formula insts_issued_not_committed;
         Stats::Scalar mispredicted_recover_cycle;
         Stats::Formula FE;
@@ -243,9 +244,10 @@ class FullO3CPU : public BaseO3CPU
         int issuedcycle;
         int recovery_cycles;
         int pipeline_width;
+        int flag_start;
         
       public:
-        PMU():issuedcycle(0),recovery_cycles(0),pipeline_width(0)
+        PMU():issuedcycle(0),recovery_cycles(0),pipeline_width(0),flag_start(0)
         {
             
         }

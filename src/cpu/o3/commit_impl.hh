@@ -988,8 +988,11 @@ DefaultCommit<Impl>::commit()
                 // PMU issued branch mispredicted recovery cycles, author: Fan Yang
                 //--------------------------------------------------------------------
                 
-                    cpu->pmu.recovery_cycles = curTick()/500 - cpu->pmu.issuedcycle;
+                cpu->pmu.recovery_cycles = curTick()/500 - cpu->pmu.issuedcycle;
+                //cout << "recovery cycles: " << cpu->pmu.recovery_cycles << " " << cpu->pmu.issuedcycle << endl;
+                if (cpu->pmu.flag_start == 1) {
                     cpu->pmu.mispredicted_recover_cycle += cpu->pmu.recovery_cycles;
+                }
                 
             } else {
                 DPRINTF(Commit,
@@ -1168,6 +1171,19 @@ DefaultCommit<Impl>::commitInsts()
 
             if (commit_success) {
                 
+                //--------------------------------------------------------------------
+                // Committing instruction, guarantee correct, author: Fan Yang
+                //--------------------------------------------------------------------
+                
+                if (head_inst->instName() == "pmubarrier") {
+                    int operands[2];
+                    operands[0] = head_inst->readIntRegOperand(head_inst->staticInst.get(), 4); // the first operand, value
+                    operands[1] = head_inst->readIntRegOperand(head_inst->staticInst.get(), 3); // the second operand, index
+                    cout << "Commit pmubarrier! " << operands[0] << " " << operands[1] << endl;
+                    cpu->pmu.flag_start = !cpu->pmu.flag_start;
+                    cout << "flag: " << cpu->pmu.flag_start << endl;
+                }
+            
                 ++num_committed;
                 statCommittedInstType[tid][head_inst->opClass()]++;
                 ppCommit->notify(head_inst);
@@ -1674,8 +1690,12 @@ DefaultCommit<Impl>::updateComInstStats(DynInstPtr &inst)
         }
     }
     
-    if (!inst->isMicroop() || inst->isLastMicroop())
+    if (!inst->isMicroop() || inst->isLastMicroop()) {
         instsCommitted[tid]++;
+        
+        if (cpu->pmu.flag_start == 1)
+            cpu->pmu.committedInsts++;
+    }
     opsCommitted[tid]++;
 
     // To match the old model, don't count nops and instruction

@@ -516,7 +516,21 @@ DefaultRename<Impl>::renameInsts(ThreadID tid)
         if ((free_rob_entries <= 0)||(free_iq_entries <= 0)||(calcFreeLQEntries(tid) <= 0)||(calcFreeSQEntries(tid) <= 0)) {
             return;
         }
-        cpu->pmu.renameIdle_starved += issueWidth;
+
+        int free_min_entries = free_rob_entries;
+        if (free_iq_entries < free_min_entries)
+            free_min_entries = free_iq_entries;
+        if (calcFreeLQEntries(tid) < free_min_entries)
+            free_min_entries = calcFreeLQEntries(tid);
+        if (calcFreeSQEntries(tid) < free_min_entries)
+            free_min_entries = calcFreeSQEntries(tid);
+        if (issueWidth < free_min_entries)
+            free_min_entries = issueWidth;
+        
+        if (cpu->pmu.flag_start == 1) {
+            cpu->pmu.renameIdle_starved += free_min_entries;
+            //cout << free_min_entries << endl;
+        }
 
         return;
     } else if (renameStatus[tid] == Unblocking) {
@@ -744,8 +758,10 @@ DefaultRename<Impl>::renameInsts(ThreadID tid)
         // PMU: Front end instructions not delivered to back end, author: Fan Yang
         //-------------------------------------------------------------------------------
         
-        assert(renamed_insts <= renameWidth);
-        cpu->pmu.renameRun_starved += (issueWidth-renamed_insts);
+        if (cpu->pmu.flag_start == 1) {
+            assert(renamed_insts <= issueWidth);
+            cpu->pmu.renameRun_starved += (issueWidth-renamed_insts);
+        }
     }
 
     if (blockThisCycle) {
