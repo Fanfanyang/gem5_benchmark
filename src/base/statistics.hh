@@ -60,6 +60,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include "base/stats/info.hh"
 #include "base/stats/output.hh"
@@ -69,6 +70,8 @@
 #include "base/intmath.hh"
 #include "base/str.hh"
 #include "base/types.hh"
+
+using namespace std;
 
 class Callback;
 
@@ -1200,6 +1203,8 @@ class VectorProxy
     ScalarProxy<Stat>
     operator[](off_type index)
     {
+        // yang test
+        //cout << "statics.hh " << index << " " << size() << endl;
         assert (index >= 0 && index < size());
         return ScalarProxy<Stat>(stat, offset + index);
     }

@@ -228,6 +228,21 @@ class FullO3CPU : public BaseO3CPU
     class PMU
     {
       public:
+        
+        int workingCycles;
+        int renameRun_starved;
+        int renameIdle_starved;
+        int Uops_not_delivered;
+        int issuedInsts;
+        int committedInsts;
+        int insts_issued_not_committed;
+        int mispredicted_recover_cycle;
+        float FE;
+        float BS;
+        float RE;
+        float BE;
+        
+        /*
         Stats::Scalar workingCycles;
         Stats::Scalar renameRun_starved;
         Stats::Scalar renameIdle_starved;
@@ -240,16 +255,19 @@ class FullO3CPU : public BaseO3CPU
         Stats::Formula BS;
         Stats::Formula RE;
         Stats::Formula BE;
-        //Stats::Vector2d TopDownAnalysis;
+        */
+        
+        Stats::Vector2d TopDownAnalysis;
         int issuedcycle;
         int recovery_cycles;
         int pipeline_width;
         int flag_start;
+        int TotalBlocks;
         
       public:
-        PMU():issuedcycle(0),recovery_cycles(0),pipeline_width(0),flag_start(0)
+        PMU(unsigned width):workingCycles(0),renameRun_starved(0),renameIdle_starved(0),Uops_not_delivered(0),issuedInsts(0),committedInsts(0),insts_issued_not_committed(0),mispredicted_recover_cycle(0),FE(0),BS(0),RE(0),BE(0),issuedcycle(0),recovery_cycles(0),pipeline_width(0),flag_start(0),TotalBlocks(4)
         {
-            
+            pipeline_width = width;
         }
     };
     
