@@ -498,7 +498,8 @@ DefaultIEW<Impl>::squashDueToBranch(DynInstPtr &inst, ThreadID tid)
         // PMU issued branch mispredicted recovery cycles, author: Fan Yang
         //--------------------------------------------------------------------
         //if (cpu->pmu.flag_start == 1)
-        cpu->pmu.issuedcycle = inst->IssuedCycle + inst->fetchTick/500;
+        cpu->pmu.issuedcycle = inst->IssuedCycle;
+        //cout << "iew: " << cpu->pmu.issuedcycle << " " << inst->IssuedCycle << " " << inst->fetchTick/500 << endl;
 
         TheISA::PCState pc = inst->pcState();
         TheISA::advancePC(pc, inst->staticInst);

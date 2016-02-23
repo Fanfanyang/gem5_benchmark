@@ -989,7 +989,7 @@ DefaultCommit<Impl>::commit()
                 //--------------------------------------------------------------------
                 
                 cpu->pmu.recovery_cycles = curTick()/500 - cpu->pmu.issuedcycle;
-                //cout << "recovery cycles: " << cpu->pmu.recovery_cycles << " " << cpu->pmu.issuedcycle << endl;
+                //cout << "recovery cycles: " << cpu->pmu.recovery_cycles << " " << curTick()/500 << " " << cpu->pmu.issuedcycle << endl;
                 if (cpu->pmu.flag_start == 1) {
                     cpu->pmu.mispredicted_recover_cycle += cpu->pmu.recovery_cycles;
                 }
