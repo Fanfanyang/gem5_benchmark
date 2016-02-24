@@ -620,7 +620,6 @@ FullO3CPU<Impl>::regStats()
     const char* BlockName[] = {"FrontEnd","BadSpecu","Retiring","BackEnd"};
     pmu.TopDownAnalysis.ysubnames(BlockName);
     
-    
 }
 
 template <class Impl>
