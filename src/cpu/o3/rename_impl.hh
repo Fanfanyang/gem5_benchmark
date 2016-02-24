@@ -529,7 +529,7 @@ DefaultRename<Impl>::renameInsts(ThreadID tid)
         
         if (cpu->pmu.flag_start == 1) {
             cpu->pmu.renameIdle_starved[cpu->pmu.block_index] += free_min_entries;
-            //cout << free_min_entries << endl;
+            cpu->pmu.renameIdle_starved[cpu->pmu.TotalBlocks-1] += free_min_entries;
         }
 
         return;
@@ -761,6 +761,7 @@ DefaultRename<Impl>::renameInsts(ThreadID tid)
         if (cpu->pmu.flag_start == 1) {
             assert(renamed_insts <= issueWidth);
             cpu->pmu.renameRun_starved[cpu->pmu.block_index] += (issueWidth-renamed_insts);
+            cpu->pmu.renameRun_starved[cpu->pmu.TotalBlocks-1] += (issueWidth-renamed_insts);
         }
     }
 

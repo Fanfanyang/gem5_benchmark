@@ -232,15 +232,15 @@ class FullO3CPU : public BaseO3CPU
         vector<int> workingCycles;
         vector<int> renameRun_starved;
         vector<int> renameIdle_starved;
-        int Uops_not_delivered;
         vector<int> issuedInsts;
         vector<int> committedInsts;
-        int insts_issued_not_committed;
         vector<int> mispredicted_recover_cycle;
-        float FE;
-        float BS;
-        float RE;
-        float BE;
+        int Uops_not_delivered[2];
+        int insts_issued_not_committed[2];
+        float FE[2];
+        float BS[2];
+        float RE[2];
+        float BE[2];
         
         /*
         Stats::Scalar workingCycles;
@@ -266,9 +266,25 @@ class FullO3CPU : public BaseO3CPU
         int block_index;
         
       public:
-        PMU(unsigned width):workingCycles(0),renameRun_starved(0),renameIdle_starved(0),Uops_not_delivered(0),issuedInsts(0),committedInsts(0),insts_issued_not_committed(0),mispredicted_recover_cycle(0),FE(0),BS(0),RE(0),BE(0),issuedcycle(0),recovery_cycles(0),pipeline_width(0),flag_start(0),TotalBlocks(8),block_index(0)
+        PMU(unsigned width):issuedcycle(0),recovery_cycles(0),pipeline_width(0),flag_start(0),TotalBlocks(8),block_index(0)
         {
             pipeline_width = width;
+            for (int i=0;i<2;i++) {
+                Uops_not_delivered[i] = 0;
+                insts_issued_not_committed[i] = 0;
+                FE[i] = 0;
+                BS[i] = 0;
+                RE[i] = 0;
+                BE[i] = 0;
+            }
+            for (int i=0;i<TotalBlocks;i++) {
+                workingCycles.push_back(0);
+                renameRun_starved.push_back(0);
+                renameIdle_starved.push_back(0);
+                issuedInsts.push_back(0);
+                committedInsts.push_back(0);
+                mispredicted_recover_cycle.push_back(0);
+            }
         }
     };
     

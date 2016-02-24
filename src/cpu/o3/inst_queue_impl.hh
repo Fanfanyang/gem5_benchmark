@@ -971,8 +971,10 @@ InstructionQueue<Impl>::scheduleReadyInsts()
     numIssuedDist.sample(total_issued);
     iqInstsIssued+= total_issued;
     
-    if (cpu->pmu.flag_start == 1)
+    if (cpu->pmu.flag_start == 1) {
         cpu->pmu.issuedInsts[cpu->pmu.block_index] += total_issued;
+        cpu->pmu.issuedInsts[cpu->pmu.TotalBlocks-1] += total_issued;
+    }
 
     // If we issued any instructions, tell the CPU we had activity.
     // @todo If the way deferred memory instructions are handeled due to
@@ -1521,6 +1523,7 @@ InstructionQueue<Impl>::addIfReady(DynInstPtr &inst)
 
         
         inst->IssuedCycle = (curTick() - inst->fetchTick)/500;
+        inst->IssuedCycle_absolute = curTick()/500;
 
         if (inst->isControl()) {
             if (inst->EnterIQCycle == -1)

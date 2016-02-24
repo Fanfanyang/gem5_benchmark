@@ -143,6 +143,9 @@ class BaseO3DynInst : public BaseDynInst<Impl>
     int CompleteCycle;
     int ROBHeadCycle;
     int CommitCycle;
+    
+    int IssuedCycle_absolute;
+    
     int BlockROBFlag;
     
     /** Reads a misc. register, including any side-effects the read

@@ -989,9 +989,10 @@ DefaultCommit<Impl>::commit()
                 //--------------------------------------------------------------------
                 
                 cpu->pmu.recovery_cycles = curTick()/500 - cpu->pmu.issuedcycle;
-                //cout << "recovery cycles: " << cpu->pmu.recovery_cycles << " " << curTick()/500 << " " << cpu->pmu.issuedcycle << endl;
-                if (cpu->pmu.flag_start == 1) {
+                if ((cpu->pmu.flag_start == 1)&&(cpu->pmu.issuedcycle != -1)) {
                     cpu->pmu.mispredicted_recover_cycle[cpu->pmu.block_index] += cpu->pmu.recovery_cycles;
+                    cpu->pmu.mispredicted_recover_cycle[cpu->pmu.TotalBlocks-1] += cpu->pmu.recovery_cycles;
+                    //cout << "recovery cycles: " << cpu->pmu.recovery_cycles << " " << curTick()/500 << " " << cpu->pmu.issuedcycle << endl;
                 }
                 
             } else {
@@ -1185,16 +1186,9 @@ DefaultCommit<Impl>::commitInsts()
                         cpu->pmu.flag_start = 0;
                     else
                         cpu->pmu.flag_start = 1;
-                    
-                    cpu->pmu.workingCycles.push_back(0);
-                    cpu->pmu.renameRun_starved.push_back(0);
-                    cpu->pmu.renameIdle_starved.push_back(0);
-                    cpu->pmu.issuedInsts.push_back(0);
-                    cpu->pmu.committedInsts.push_back(0);
-                    cpu->pmu.mispredicted_recover_cycle.push_back(0);
-                    
                     cout << "Commit pmubarrier! " << operands[0] << " " << operands[1] << endl;
-                    cout << "flag: " << cpu->pmu.flag_start << " " << cpu->pmu.block_index << endl;
+                    cout << "flag: " << cpu->pmu.flag_start << " " << cpu->pmu.block_index << " ";
+                    cout << "commit sn: " << head_inst->seqNum << endl;
                 }
             
                 ++num_committed;
@@ -1706,8 +1700,10 @@ DefaultCommit<Impl>::updateComInstStats(DynInstPtr &inst)
     if (!inst->isMicroop() || inst->isLastMicroop()) {
         instsCommitted[tid]++;
         
-        if (cpu->pmu.flag_start == 1)
+        if (cpu->pmu.flag_start == 1) {
             cpu->pmu.committedInsts[cpu->pmu.block_index]++;
+            cpu->pmu.committedInsts[cpu->pmu.TotalBlocks-1]++;
+        }
     }
     opsCommitted[tid]++;
 

@@ -143,6 +143,9 @@ BaseO3DynInst<Impl>::initVars()
     CompleteCycle = -1;
     ROBHeadCycle = -1;
     CommitCycle = -1;
+    
+    IssuedCycle_absolute = -1;
+    
     BlockROBFlag = 0;
 }
 

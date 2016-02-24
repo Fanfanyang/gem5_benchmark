@@ -631,28 +631,35 @@ FullO3CPU<Impl>::tick()
     assert(getDrainState() != Drainable::Drained);
 
     ++numCycles;
-    if (pmu.flag_start == 1)
-        ++pmu.workingCycles[pmu.block_index];
     line_trace.Tick++;
     
     if (pmu.flag_start == 1) {
-        pmu.Uops_not_delivered = pmu.renameIdle_starved[pmu.block_index] + pmu.renameRun_starved[pmu.block_index];    // computed in rename
-        pmu.insts_issued_not_committed = pmu.issuedInsts[pmu.block_index] - pmu.committedInsts[pmu.block_index];
-    
-        pmu.FE = (float)pmu.Uops_not_delivered/(pmu.workingCycles[pmu.block_index]*(pmu.pipeline_width))*100;
-        pmu.BS = (pmu.insts_issued_not_committed + (float)pmu.pipeline_width*(pmu.mispredicted_recover_cycle[pmu.block_index]))/(pmu.workingCycles[pmu.block_index]*(pmu.pipeline_width))*100;
-        pmu.RE = (float)pmu.committedInsts[pmu.block_index]/(pmu.workingCycles[pmu.block_index]*(pmu.pipeline_width))*100;
-        pmu.BE = 100.0 - (pmu.FE + pmu.BS + pmu.RE);
+        ++pmu.workingCycles[pmu.block_index];
+        ++pmu.workingCycles[pmu.TotalBlocks-1];
         
-        pmu.TopDownAnalysis[pmu.block_index][0] = pmu.FE;
-        pmu.TopDownAnalysis[pmu.block_index][1] = pmu.BS;
-        pmu.TopDownAnalysis[pmu.block_index][2] = pmu.RE;
-        pmu.TopDownAnalysis[pmu.block_index][3] = pmu.BE;
+        pmu.Uops_not_delivered[0] = pmu.renameIdle_starved[pmu.block_index] + pmu.renameRun_starved[pmu.block_index];    // computed in rename
+        pmu.insts_issued_not_committed[0] = pmu.issuedInsts[pmu.block_index] - pmu.committedInsts[pmu.block_index];
+        pmu.FE[0] = (float)pmu.Uops_not_delivered[0]/(pmu.workingCycles[pmu.block_index]*(pmu.pipeline_width))*100;
+        pmu.BS[0] = (pmu.insts_issued_not_committed[0] + (float)pmu.pipeline_width*(pmu.mispredicted_recover_cycle[pmu.block_index]))/(pmu.workingCycles[pmu.block_index]*(pmu.pipeline_width))*100;
+        pmu.RE[0] = (float)pmu.committedInsts[pmu.block_index]/(pmu.workingCycles[pmu.block_index]*(pmu.pipeline_width))*100;
+        pmu.BE[0] = 100.0 - (pmu.FE[0] + pmu.BS[0] + pmu.RE[0]);
+        pmu.TopDownAnalysis[pmu.block_index][0] = pmu.FE[0];
+        pmu.TopDownAnalysis[pmu.block_index][1] = pmu.BS[0];
+        pmu.TopDownAnalysis[pmu.block_index][2] = pmu.RE[0];
+        pmu.TopDownAnalysis[pmu.block_index][3] = pmu.BE[0];
         
-        pmu.TopDownAnalysis[pmu.TotalBlocks-1][0] = pmu.FE;
-        pmu.TopDownAnalysis[pmu.TotalBlocks-1][1] = pmu.BS;
-        pmu.TopDownAnalysis[pmu.TotalBlocks-1][2] = pmu.RE;
-        pmu.TopDownAnalysis[pmu.TotalBlocks-1][3] = pmu.BE;
+        pmu.Uops_not_delivered[1] = pmu.renameIdle_starved[pmu.TotalBlocks-1] + pmu.renameRun_starved[pmu.TotalBlocks-1];    // computed in rename
+        pmu.insts_issued_not_committed[1] = pmu.issuedInsts[pmu.TotalBlocks-1] - pmu.committedInsts[pmu.TotalBlocks-1];
+        pmu.FE[1] = (float)pmu.Uops_not_delivered[1]/(pmu.workingCycles[pmu.TotalBlocks-1]*(pmu.pipeline_width))*100;
+        pmu.BS[1] = (pmu.insts_issued_not_committed[1] + (float)pmu.pipeline_width*(pmu.mispredicted_recover_cycle[pmu.TotalBlocks-1]))/(pmu.workingCycles[pmu.TotalBlocks-1]*(pmu.pipeline_width))*100;
+        pmu.RE[1] = (float)pmu.committedInsts[pmu.TotalBlocks-1]/(pmu.workingCycles[pmu.TotalBlocks-1]*(pmu.pipeline_width))*100;
+        pmu.BE[1] = 100.0 - (pmu.FE[1] + pmu.BS[1] + pmu.RE[1]);
+        pmu.TopDownAnalysis[pmu.TotalBlocks-1][0] = pmu.FE[1];
+        pmu.TopDownAnalysis[pmu.TotalBlocks-1][1] = pmu.BS[1];
+        pmu.TopDownAnalysis[pmu.TotalBlocks-1][2] = pmu.RE[1];
+        pmu.TopDownAnalysis[pmu.TotalBlocks-1][3] = pmu.BE[1];
+        
+        //cout << pmu.insts_issued_not_committed[0] << " " << pmu.mispredicted_recover_cycle[pmu.block_index] << " " << pmu.workingCycles[pmu.block_index] << endl;
     }
     
     //--------------------------------------------------------------------
