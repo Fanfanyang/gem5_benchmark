@@ -991,7 +991,7 @@ DefaultCommit<Impl>::commit()
                 cpu->pmu.recovery_cycles = curTick()/500 - cpu->pmu.issuedcycle;
                 //cout << "recovery cycles: " << cpu->pmu.recovery_cycles << " " << curTick()/500 << " " << cpu->pmu.issuedcycle << endl;
                 if (cpu->pmu.flag_start == 1) {
-                    cpu->pmu.mispredicted_recover_cycle += cpu->pmu.recovery_cycles;
+                    cpu->pmu.mispredicted_recover_cycle[cpu->pmu.block_index] += cpu->pmu.recovery_cycles;
                 }
                 
             } else {
@@ -1185,6 +1185,13 @@ DefaultCommit<Impl>::commitInsts()
                         cpu->pmu.flag_start = 0;
                     else
                         cpu->pmu.flag_start = 1;
+                    
+                    cpu->pmu.workingCycles.push_back(0);
+                    cpu->pmu.renameRun_starved.push_back(0);
+                    cpu->pmu.renameIdle_starved.push_back(0);
+                    cpu->pmu.issuedInsts.push_back(0);
+                    cpu->pmu.committedInsts.push_back(0);
+                    cpu->pmu.mispredicted_recover_cycle.push_back(0);
                     
                     cout << "Commit pmubarrier! " << operands[0] << " " << operands[1] << endl;
                     cout << "flag: " << cpu->pmu.flag_start << " " << cpu->pmu.block_index << endl;
@@ -1700,7 +1707,7 @@ DefaultCommit<Impl>::updateComInstStats(DynInstPtr &inst)
         instsCommitted[tid]++;
         
         if (cpu->pmu.flag_start == 1)
-            cpu->pmu.committedInsts++;
+            cpu->pmu.committedInsts[cpu->pmu.block_index]++;
     }
     opsCommitted[tid]++;
 

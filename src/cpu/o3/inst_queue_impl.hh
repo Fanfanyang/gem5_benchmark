@@ -972,7 +972,7 @@ InstructionQueue<Impl>::scheduleReadyInsts()
     iqInstsIssued+= total_issued;
     
     if (cpu->pmu.flag_start == 1)
-        cpu->pmu.issuedInsts += total_issued;
+        cpu->pmu.issuedInsts[cpu->pmu.block_index] += total_issued;
 
     // If we issued any instructions, tell the CPU we had activity.
     // @todo If the way deferred memory instructions are handeled due to

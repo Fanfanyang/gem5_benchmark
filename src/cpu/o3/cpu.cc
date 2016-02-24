@@ -633,16 +633,16 @@ FullO3CPU<Impl>::tick()
 
     ++numCycles;
     if (pmu.flag_start == 1)
-        ++pmu.workingCycles;
+        ++pmu.workingCycles[pmu.block_index];
     line_trace.Tick++;
     
     if (pmu.flag_start == 1) {
-        pmu.Uops_not_delivered = pmu.renameIdle_starved + pmu.renameRun_starved;    // computed in rename
-        pmu.insts_issued_not_committed = pmu.issuedInsts - pmu.committedInsts;
+        pmu.Uops_not_delivered = pmu.renameIdle_starved[pmu.block_index] + pmu.renameRun_starved[pmu.block_index];    // computed in rename
+        pmu.insts_issued_not_committed = pmu.issuedInsts[pmu.block_index] - pmu.committedInsts[pmu.block_index];
     
-        pmu.FE = (float)pmu.Uops_not_delivered/(pmu.workingCycles*(pmu.pipeline_width))*100;
-        pmu.BS = (pmu.insts_issued_not_committed + ((float)pmu.pipeline_width)*(pmu.mispredicted_recover_cycle))/(pmu.workingCycles*(pmu.pipeline_width))*100;
-        pmu.RE = (float)pmu.committedInsts/(pmu.workingCycles*(pmu.pipeline_width))*100;
+        pmu.FE = (float)pmu.Uops_not_delivered/(pmu.workingCycles[pmu.block_index]*(pmu.pipeline_width))*100;
+        pmu.BS = (pmu.insts_issued_not_committed + (float)pmu.pipeline_width*(pmu.mispredicted_recover_cycle[pmu.block_index]))/(pmu.workingCycles[pmu.block_index]*(pmu.pipeline_width))*100;
+        pmu.RE = (float)pmu.committedInsts[pmu.block_index]/(pmu.workingCycles[pmu.block_index]*(pmu.pipeline_width))*100;
         pmu.BE = 100.0 - (pmu.FE + pmu.BS + pmu.RE);
         
         pmu.TopDownAnalysis[pmu.block_index][0] = pmu.FE;

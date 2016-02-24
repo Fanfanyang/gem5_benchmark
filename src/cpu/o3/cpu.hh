@@ -229,14 +229,14 @@ class FullO3CPU : public BaseO3CPU
     {
       public:
         
-        int workingCycles;
-        int renameRun_starved;
-        int renameIdle_starved;
+        vector<int> workingCycles;
+        vector<int> renameRun_starved;
+        vector<int> renameIdle_starved;
         int Uops_not_delivered;
-        int issuedInsts;
-        int committedInsts;
+        vector<int> issuedInsts;
+        vector<int> committedInsts;
         int insts_issued_not_committed;
-        int mispredicted_recover_cycle;
+        vector<int> mispredicted_recover_cycle;
         float FE;
         float BS;
         float RE;
