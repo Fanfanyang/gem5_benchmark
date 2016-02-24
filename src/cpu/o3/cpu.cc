@@ -609,12 +609,6 @@ FullO3CPU<Impl>::regStats()
         .desc("BE")
         ;
 #endif
-    /*
-    pmu.TopDownAnalysis[0][0] = pmu.issuedcycle;
-    pmu.TopDownAnalysis[0][1] = pmu.issuedcycle;
-    pmu.TopDownAnalysis[0][2] = pmu.issuedcycle;
-    pmu.TopDownAnalysis[0][3] = pmu.issuedcycle;
-    */
     
     pmu.TopDownAnalysis
         .init(pmu.TotalBlocks,4)
@@ -651,10 +645,15 @@ FullO3CPU<Impl>::tick()
         pmu.RE = (float)pmu.committedInsts/(pmu.workingCycles*(pmu.pipeline_width))*100;
         pmu.BE = 100.0 - (pmu.FE + pmu.BS + pmu.RE);
         
-        pmu.TopDownAnalysis[0][0] = pmu.FE;
-        pmu.TopDownAnalysis[0][1] = pmu.BS;
-        pmu.TopDownAnalysis[0][2] = pmu.RE;
-        pmu.TopDownAnalysis[0][3] = pmu.BE;
+        pmu.TopDownAnalysis[pmu.block_index][0] = pmu.FE;
+        pmu.TopDownAnalysis[pmu.block_index][1] = pmu.BS;
+        pmu.TopDownAnalysis[pmu.block_index][2] = pmu.RE;
+        pmu.TopDownAnalysis[pmu.block_index][3] = pmu.BE;
+        
+        pmu.TopDownAnalysis[pmu.TotalBlocks-1][0] = pmu.FE;
+        pmu.TopDownAnalysis[pmu.TotalBlocks-1][1] = pmu.BS;
+        pmu.TopDownAnalysis[pmu.TotalBlocks-1][2] = pmu.RE;
+        pmu.TopDownAnalysis[pmu.TotalBlocks-1][3] = pmu.BE;
     }
     
     //--------------------------------------------------------------------

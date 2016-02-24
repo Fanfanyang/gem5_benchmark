@@ -263,9 +263,10 @@ class FullO3CPU : public BaseO3CPU
         int pipeline_width;
         int flag_start;
         int TotalBlocks;
+        int block_index;
         
       public:
-        PMU(unsigned width):workingCycles(0),renameRun_starved(0),renameIdle_starved(0),Uops_not_delivered(0),issuedInsts(0),committedInsts(0),insts_issued_not_committed(0),mispredicted_recover_cycle(0),FE(0),BS(0),RE(0),BE(0),issuedcycle(0),recovery_cycles(0),pipeline_width(0),flag_start(0),TotalBlocks(4)
+        PMU(unsigned width):workingCycles(0),renameRun_starved(0),renameIdle_starved(0),Uops_not_delivered(0),issuedInsts(0),committedInsts(0),insts_issued_not_committed(0),mispredicted_recover_cycle(0),FE(0),BS(0),RE(0),BE(0),issuedcycle(0),recovery_cycles(0),pipeline_width(0),flag_start(0),TotalBlocks(8),block_index(0)
         {
             pipeline_width = width;
         }
