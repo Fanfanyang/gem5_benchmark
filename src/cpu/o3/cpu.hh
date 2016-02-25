@@ -242,20 +242,7 @@ class FullO3CPU : public BaseO3CPU
         float RE[2];
         float BE[2];
         
-        /*
-        Stats::Scalar workingCycles;
-        Stats::Scalar renameRun_starved;
-        Stats::Scalar renameIdle_starved;
-        Stats::Formula Uops_not_delivered;
-        Stats::Scalar issuedInsts;
-        Stats::Scalar committedInsts;
-        Stats::Formula insts_issued_not_committed;
-        Stats::Scalar mispredicted_recover_cycle;
-        Stats::Formula FE;
-        Stats::Formula BS;
-        Stats::Formula RE;
-        Stats::Formula BE;
-        */
+        Stats::Vector2d pmu_test;
         
         Stats::Vector2d TopDownAnalysis;
         Stats::Vector2d CommitCycles;

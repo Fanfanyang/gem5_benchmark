@@ -542,73 +542,13 @@ FullO3CPU<Impl>::regStats()
     //------------------------------------------------------------------------------
     // PMU, CPU working cycles, author: Fan Yang
     //------------------------------------------------------------------------------
-#if 0
-    pmu.workingCycles
-        .name(name() + ".pmu.workingCycles")
-        .desc("CPU cycles that is not idle")
-        .prereq(pmu.workingCycles);
-    
-    pmu.renameIdle_starved
-        .name(name() + ".pmu.renameIdle_starved")
-        .desc("Number of slots that front end does not feed enough back end")
-        .prereq(pmu.renameIdle_starved);
-    
-    pmu.renameRun_starved
-        .name(name() + ".pmu.renameRun_starved")
-        .desc("Number of slots that front end does not feed enough back end")
-        .prereq(pmu.renameRun_starved);
-    
-    pmu.Uops_not_delivered
-        .name(name() + ".pmu.Uops_not_delivered")
-        .desc("Number of slots that front end does not feed enough back end")
-        ;
-    
-    pmu.issuedInsts
-        .name(name() + ".pmu.issuedInsts")
-        .desc("Number of instructions issued")
-        ;
-    
-    pmu.committedInsts
-        .name(name() + ".pmu.committedInsts")
-        .desc("Number of instructions committed")
-        ;
-    
-    pmu.insts_issued_not_committed
-        .name(name() + ".pmu.Insts_issued_not_committed")
-        .desc("Instructions issued yet not committed")
-        ;
-    
-    pmu.mispredicted_recover_cycle
-        .name(name() + ".pmu.mispredicted_recover_cycle")
-        .desc("Recovery cycles due to issued branch misprediction")
-        .prereq(pmu.mispredicted_recover_cycle)
-        ;
 
-    pmu.Uops_not_delivered = pmu.renameIdle_starved + pmu.renameRun_starved;    // computed in rename
-    pmu.insts_issued_not_committed = pmu.issuedInsts - pmu.committedInsts;
-    
-    pmu.FE = pmu.Uops_not_delivered/(pmu.workingCycles*(pmu.pipeline_width))*100;
-    pmu.BS = (pmu.insts_issued_not_committed + (pmu.pipeline_width)*(pmu.mispredicted_recover_cycle))/(pmu.workingCycles*(pmu.pipeline_width))*100;
-    pmu.RE = pmu.committedInsts/(pmu.workingCycles*(pmu.pipeline_width))*100;
-    pmu.BE = 100 - (pmu.FE + pmu.BS + pmu.RE);
-
-    pmu.FE
-        .name(name() + ".pmu.FE")
-        .desc("FE")
+    pmu.pmu_test
+        .init(pmu.TotalBlocks,4)
+        .name(name() + ".pmu.tests")
+        .desc("Test the function correctness")
+        .flags(total | pdf | dist)
         ;
-    pmu.BS
-        .name(name() + ".pmu.BS")
-        .desc("BS")
-        ;
-    pmu.RE
-        .name(name() + ".pmu.RE")
-        .desc("RE")
-        ;
-    pmu.BE
-        .name(name() + ".pmu.BE")
-        .desc("BE")
-        ;
-#endif
     
     pmu.TopDownAnalysis
         .init(pmu.TotalBlocks,4)
@@ -669,7 +609,10 @@ FullO3CPU<Impl>::tick()
         pmu.TopDownAnalysis[pmu.TotalBlocks-1][2] = pmu.RE[1];
         pmu.TopDownAnalysis[pmu.TotalBlocks-1][3] = pmu.BE[1];
         
-        //cout << pmu.Uops_not_delivered[1] << " " << pmu.insts_issued_not_committed[1] << " " << pmu.mispredicted_recover_cycle[pmu.TotalBlocks-1] << " " << pmu.committedInsts[pmu.TotalBlocks-1] << " " << pmu.workingCycles[pmu.TotalBlocks-1] << endl;
+        pmu.pmu_test[pmu.block_index][0] = (pmu.workingCycles[pmu.block_index]*pmu.pipeline_width);
+        pmu.pmu_test[pmu.block_index][1] = pmu.renameIdle_starved[pmu.block_index];
+        pmu.pmu_test[pmu.block_index][2] = pmu.renameRun_starved[pmu.block_index];
+        pmu.pmu_test[pmu.block_index][3] = pmu.committedInsts[pmu.block_index];
     }
     
     //--------------------------------------------------------------------
