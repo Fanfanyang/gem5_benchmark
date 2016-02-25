@@ -620,6 +620,16 @@ FullO3CPU<Impl>::regStats()
     const char* BlockName[] = {"FrontEnd","BadSpecu","Retiring","BackEnd"};
     pmu.TopDownAnalysis.ysubnames(BlockName);
     
+    pmu.CommitCycles
+        .init(pmu.TotalBlocks,7)
+        .name(name() + ".pmu.CommitCycles")
+        .desc("Commit cycles")
+        .flags(total | pdf | dist)
+        ;
+    
+    const char* cycles_type[] = {"CWlimit","ROBempty","Block_ld","Block_st","Block_ctrl","Block_alu","Unblock"};
+    pmu.CommitCycles.ysubnames(cycles_type);      // for renaming
+    
 }
 
 template <class Impl>
@@ -659,7 +669,7 @@ FullO3CPU<Impl>::tick()
         pmu.TopDownAnalysis[pmu.TotalBlocks-1][2] = pmu.RE[1];
         pmu.TopDownAnalysis[pmu.TotalBlocks-1][3] = pmu.BE[1];
         
-        cout << pmu.Uops_not_delivered[1] << " " << pmu.insts_issued_not_committed[1] << " " << pmu.mispredicted_recover_cycle[pmu.TotalBlocks-1] << " " << pmu.committedInsts[pmu.TotalBlocks-1] << " " << pmu.workingCycles[pmu.TotalBlocks-1] << endl;
+        //cout << pmu.Uops_not_delivered[1] << " " << pmu.insts_issued_not_committed[1] << " " << pmu.mispredicted_recover_cycle[pmu.TotalBlocks-1] << " " << pmu.committedInsts[pmu.TotalBlocks-1] << " " << pmu.workingCycles[pmu.TotalBlocks-1] << endl;
     }
     
     //--------------------------------------------------------------------

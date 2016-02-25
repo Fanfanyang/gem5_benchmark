@@ -548,7 +548,7 @@ class DefaultCommit
     int pipeline_rountine = 0;
     
     Stats::Vector2d YangCommittedInsts;
-    Stats::Vector2d YangCommitCycles;
+    //Stats::Vector2d CommitCycles;
     Stats::Vector2d YangAverageROBInsts;
     Stats::Vector2d MemCycleMix;
     Stats::Vector2d MemBlockCycle;

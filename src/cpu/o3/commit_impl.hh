@@ -324,15 +324,17 @@ DefaultCommit<Impl>::regStats()
     const char* inst_name[] = {"Compute","Memory","Control"};
     YangCommittedInsts.ysubnames(inst_name);      // for renaming
     
-    YangCommitCycles
-        .init(numThreads,7)
-        .name(name() + ".CommitCycles.yang")
+    /*
+    cpu->pmu.CommitCycles
+        .init(cpu->pmu.TotalBlocks,7)
+        .name(name() + ".cpu->pmu.CommitCycles.pmu")
         .desc("Commit cycles")
         .flags(total | pdf | dist)
         ;
     
     const char* cycles_type[] = {"CWlimit","ROBempty","Block_ld","Block_st","Block_ctrl","Block_alu","Unblock"};
-    YangCommitCycles.ysubnames(cycles_type);      // for renaming
+    cpu->pmu.CommitCycles.ysubnames(cycles_type);      // for renaming
+    */
     
     YangAverageROBInsts
     .init(numThreads,3)
@@ -809,10 +811,11 @@ DefaultCommit<Impl>::tick()
                     " ROB and ready to commit\n",
                     tid, inst->seqNum, inst->pcState());
             if (CWflag == 1){
-                YangCommitCycles[tid][0]++;
+                if (cpu->pmu.flag_start == 1)
+                    cpu->pmu.CommitCycles[cpu->pmu.block_index][0]++;
                 CWflag = 0;
-            } else
-                YangCommitCycles[tid][6]++;
+            } else if (cpu->pmu.flag_start == 1)
+                cpu->pmu.CommitCycles[cpu->pmu.block_index][6]++;
             
             inst->BlockROBFlag = 1;
 
@@ -825,19 +828,21 @@ DefaultCommit<Impl>::tick()
                     "%s is head of ROB and not ready\n",
                     tid, inst->seqNum, inst->pcState());
 
-            if (inst->isLoad())
-                YangCommitCycles[tid][2]++;
-            else if (inst->isStore())
-                YangCommitCycles[tid][3]++;
-            else if (inst->isControl())
-                YangCommitCycles[tid][4]++;
-            else
-                YangCommitCycles[tid][5]++;
+            if (cpu->pmu.flag_start == 1) {
+                if (inst->isLoad())
+                    cpu->pmu.CommitCycles[cpu->pmu.block_index][2]++;
+                else if (inst->isStore())
+                    cpu->pmu.CommitCycles[cpu->pmu.block_index][3]++;
+                else if (inst->isControl())
+                    cpu->pmu.CommitCycles[cpu->pmu.block_index][4]++;
+                else
+                    cpu->pmu.CommitCycles[cpu->pmu.block_index][5]++;
+            }
             
             inst->ROBHeadCycle = (curTick() - inst->fetchTick)/500;
             
-        } else
-            YangCommitCycles[tid][1]++;
+        } else if (cpu->pmu.flag_start == 1)
+            cpu->pmu.CommitCycles[cpu->pmu.block_index][1]++;
         
         rob->InstTypes(tid, insts_alu, insts_memory, insts_control);
         access_count++;

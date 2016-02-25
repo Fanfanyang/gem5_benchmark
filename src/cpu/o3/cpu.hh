@@ -258,6 +258,7 @@ class FullO3CPU : public BaseO3CPU
         */
         
         Stats::Vector2d TopDownAnalysis;
+        Stats::Vector2d CommitCycles;
         int issuedcycle;
         int recovery_cycles;
         int pipeline_width;
