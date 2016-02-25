@@ -242,6 +242,8 @@ class FullO3CPU : public BaseO3CPU
         float RE[2];
         float BE[2];
         
+        Stats::Vector2d pmu_test;
+        
         Stats::Vector2d TopDownAnalysis;
         Stats::Vector2d CommitCycles;
         int64_t issuedcycle;
