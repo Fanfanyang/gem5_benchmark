@@ -659,7 +659,7 @@ FullO3CPU<Impl>::tick()
         pmu.TopDownAnalysis[pmu.TotalBlocks-1][2] = pmu.RE[1];
         pmu.TopDownAnalysis[pmu.TotalBlocks-1][3] = pmu.BE[1];
         
-        cout << pmu.Uops_not_delivered[1] << " " << pmu.insts_issued_not_committed[1] << " " << pmu.committedInsts[pmu.TotalBlocks-1] << " " << pmu.workingCycles[pmu.TotalBlocks-1] << endl;
+        cout << pmu.Uops_not_delivered[1] << " " << pmu.insts_issued_not_committed[1] << " " << pmu.mispredicted_recover_cycle[pmu.TotalBlocks-1] << " " << pmu.committedInsts[pmu.TotalBlocks-1] << " " << pmu.workingCycles[pmu.TotalBlocks-1] << endl;
     }
     
     //--------------------------------------------------------------------
