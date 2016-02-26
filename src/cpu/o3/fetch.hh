@@ -457,6 +457,8 @@ class DefaultFetch
     /** The width of decode in instructions. */
     unsigned decodeWidth;
 
+    unsigned issueWidth;
+    
     /** Is the cache blocked?  If so no threads can access it. */
     bool cacheBlocked;
 

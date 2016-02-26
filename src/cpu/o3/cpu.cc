@@ -560,6 +560,16 @@ FullO3CPU<Impl>::regStats()
     const char* BlockName[] = {"FrontEnd","BadSpecu","Retiring","BackEnd"};
     pmu.TopDownAnalysis.ysubnames(BlockName);
     
+    pmu.FrontEndLevel
+        .init(pmu.TotalBlocks,3)
+        .name(name() + ".pmu.FrontEndLevel")
+        .desc("Front end level ")
+        .flags(total | pdf | dist)
+        ;
+    
+    const char* FrontEndLevel_type[] = {"Latency","Bandwidth","InvalidThreadID"};
+    pmu.CommitCycles.ysubnames(FrontEndLevel_type);
+    
     pmu.CommitCycles
         .init(pmu.TotalBlocks,7)
         .name(name() + ".pmu.CommitCycles")
@@ -608,6 +618,9 @@ FullO3CPU<Impl>::tick()
         pmu.TopDownAnalysis[pmu.TotalBlocks-1][1] = pmu.BS[1];
         pmu.TopDownAnalysis[pmu.TotalBlocks-1][2] = pmu.RE[1];
         pmu.TopDownAnalysis[pmu.TotalBlocks-1][3] = pmu.BE[1];
+        
+        //pmu.FrontEndLevel[pmu.block_index][1] = pmu.frontend_bandwidth[pmu.block_index]/(pmu.workingCycles[pmu.block_index]*pmu.pipeline_width);
+        //pmu.FrontEndLevel[pmu.block_index][0] = 100 - pmu.FrontEndLevel[pmu.block_index][1];
 
 /*         for (int j=0; j<7; j++)
                 pmu.CommitCycles[pmu.TotalBlocks-1][j] = 0; 

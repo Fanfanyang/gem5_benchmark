@@ -49,6 +49,7 @@
 #include <list>
 #include <map>
 #include <queue>
+#include <iostream>
 
 #include "arch/isa_traits.hh"
 #include "arch/tlb.hh"
@@ -84,6 +85,7 @@ DefaultFetch<Impl>::DefaultFetch(O3CPU *_cpu, DerivO3CPUParams *params)
       commitToFetchDelay(params->commitToFetchDelay),
       fetchWidth(params->fetchWidth),
       decodeWidth(params->decodeWidth),
+      issueWidth(params->issueWidth),
       retryPkt(NULL),
       retryTid(InvalidThreadID),
       cacheBlkSize(cpu->cacheLineSize()),
@@ -1154,6 +1156,9 @@ DefaultFetch<Impl>::fetch(bool &status_change)
             profileStall(0);
         }
 
+        if (cpu->pmu.flag_start == 1)
+            cpu->pmu.FrontEndLevel[cpu->pmu.block_index][2] += issueWidth;
+        
         return;
     }
 
@@ -1195,6 +1200,13 @@ DefaultFetch<Impl>::fetch(bool &status_change)
                 ++fetchTlbCycles;
             else
                 ++fetchMiscStallCycles;
+            
+            //--------------------------------------------------------------------
+            // PMU frontend latency, author: Fan Yang
+            //--------------------------------------------------------------------
+            if (cpu->pmu.flag_start == 1)
+                cpu->pmu.FrontEndLevel[cpu->pmu.block_index][0] += issueWidth;
+            
             return;
         } else if ((checkInterrupt(thisPC.instAddr()) && !delayedCommit[tid])) {
             // Stall CPU if an interrupt is posted and we're not issuing
@@ -1202,11 +1214,19 @@ DefaultFetch<Impl>::fetch(bool &status_change)
             // are not interruptable by interrupts, only faults)
             ++fetchMiscStallCycles;
             DPRINTF(Fetch, "[tid:%i]: Fetch is stalled!\n", tid);
+            
+            if (cpu->pmu.flag_start == 1)
+                cpu->pmu.FrontEndLevel[cpu->pmu.block_index][0] += issueWidth;
+            
             return;
         }
     } else {
         if (fetchStatus[tid] == Idle) {
             ++fetchIdleCycles;
+            
+            if (cpu->pmu.flag_start == 1)
+                cpu->pmu.FrontEndLevel[cpu->pmu.block_index][0] += issueWidth;
+            
             DPRINTF(Fetch, "[tid:%i]: Fetch is idle!\n", tid);
         }
 
@@ -1393,6 +1413,14 @@ DefaultFetch<Impl>::fetch(bool &status_change)
                 "fetch buffer.\n", tid);
     }
 
+    //--------------------------------------------------------------------
+    // PMU frontend bandwidth, author: Fan Yang
+    //--------------------------------------------------------------------
+    if (cpu->pmu.flag_start == 1)
+        cpu->pmu.FrontEndLevel[cpu->pmu.block_index][1] += (issueWidth - numInst);
+    
+    cout << cpu->pmu.workingCycles[cpu->pmu.block_index] << endl;
+    
     macroop[tid] = curMacroop;
     fetchOffset[tid] = pcOffset;
 

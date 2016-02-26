@@ -235,6 +235,7 @@ class FullO3CPU : public BaseO3CPU
         vector<int64_t> issuedInsts;
         vector<int64_t> committedInsts;
         vector<int64_t> mispredicted_recover_cycle;
+        //vector<int64_t> frontend_bandwidth;
         int64_t Uops_not_delivered[2];
         int64_t insts_issued_not_committed[2];
         float FE[2];
@@ -243,6 +244,7 @@ class FullO3CPU : public BaseO3CPU
         float BE[2];
         
         Stats::Vector2d TopDownAnalysis;
+        Stats::Vector2d FrontEndLevel;
         Stats::Vector2d CommitCycles;
         int64_t issuedcycle;
         int64_t recovery_cycles;
@@ -270,6 +272,7 @@ class FullO3CPU : public BaseO3CPU
                 issuedInsts.push_back(0);
                 committedInsts.push_back(0);
                 mispredicted_recover_cycle.push_back(0);
+                //frontend_bandwidth.push_back(0);
             }
         }
     };
