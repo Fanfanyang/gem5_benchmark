@@ -779,6 +779,13 @@ DefaultFetch<Impl>::doSquash(const TheISA::PCState &newPC,
 
     fetchStatus[tid] = Squashing;
 
+    //--------------------------------------------------------------------
+    // PMU frontend squash latency, author: Fan Yang
+    //--------------------------------------------------------------------
+    if (cpu->pmu.flag_start == 1)
+        cpu->pmu.FrontEndLevel[cpu->pmu.block_index][0] += (issueWidth + fetchQueue[tid].size());
+    cout << fetchQueue[tid].size() << endl;
+    
     // Empty fetch queue
     fetchQueue[tid].clear();
 
@@ -1155,9 +1162,6 @@ DefaultFetch<Impl>::fetch(bool &status_change)
         if (numThreads == 1) {  // @todo Per-thread stats
             profileStall(0);
         }
-
-        if (cpu->pmu.flag_start == 1)
-            cpu->pmu.FrontEndLevel[cpu->pmu.block_index][2] += issueWidth;
         
         return;
     }
@@ -1419,7 +1423,7 @@ DefaultFetch<Impl>::fetch(bool &status_change)
     if (cpu->pmu.flag_start == 1)
         cpu->pmu.FrontEndLevel[cpu->pmu.block_index][1] += (issueWidth - numInst);
     
-    cout << cpu->pmu.workingCycles[cpu->pmu.block_index] << endl;
+    //cout << cpu->pmu.workingCycles[cpu->pmu.block_index] << endl;
     
     macroop[tid] = curMacroop;
     fetchOffset[tid] = pcOffset;

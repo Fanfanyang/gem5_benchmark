@@ -561,7 +561,7 @@ FullO3CPU<Impl>::regStats()
     pmu.TopDownAnalysis.ysubnames(BlockName);
     
     pmu.FrontEndLevel
-        .init(pmu.TotalBlocks,3)
+        .init(pmu.TotalBlocks,2)
         .name(name() + ".pmu.FrontEndLevel")
         .desc("Front end level ")
         .flags(total | pdf | dist)
