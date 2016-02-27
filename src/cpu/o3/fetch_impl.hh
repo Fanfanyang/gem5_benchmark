@@ -784,7 +784,7 @@ DefaultFetch<Impl>::doSquash(const TheISA::PCState &newPC,
     //--------------------------------------------------------------------
     if (cpu->pmu.flag_start == 1)
         cpu->pmu.FrontEndLevel[cpu->pmu.block_index][0] += (issueWidth + fetchQueue[tid].size());
-    cout << fetchQueue[tid].size() << endl;
+    //cout << fetchQueue[tid].size() << endl;
     
     // Empty fetch queue
     fetchQueue[tid].clear();
@@ -1409,19 +1409,31 @@ DefaultFetch<Impl>::fetch(bool &status_change)
     if (predictedBranch) {
         DPRINTF(Fetch, "[tid:%i]: Done fetching, predicted branch "
                 "instruction encountered.\n", tid);
+        
+        if (cpu->pmu.flag_start == 1)
+            cpu->pmu.FrontEndLevel[cpu->pmu.block_index][0] += (issueWidth - numInst);
+        
     } else if (numInst >= fetchWidth) {
         DPRINTF(Fetch, "[tid:%i]: Done fetching, reached fetch bandwidth "
                 "for this cycle.\n", tid);
+        
+        //--------------------------------------------------------------------
+        // PMU frontend bandwidth, author: Fan Yang
+        //--------------------------------------------------------------------
+        if (cpu->pmu.flag_start == 1)
+            cpu->pmu.FrontEndLevel[cpu->pmu.block_index][1] += (issueWidth - numInst);
+        
     } else if (blkOffset >= fetchBufferSize) {
         DPRINTF(Fetch, "[tid:%i]: Done fetching, reached the end of the"
                 "fetch buffer.\n", tid);
+        
+        if (cpu->pmu.flag_start == 1)
+            cpu->pmu.FrontEndLevel[cpu->pmu.block_index][0] += (issueWidth - numInst);
+        
+    } else {
+        if (cpu->pmu.flag_start == 1)
+            cpu->pmu.FrontEndLevel[cpu->pmu.block_index][0] += (issueWidth - numInst);
     }
-
-    //--------------------------------------------------------------------
-    // PMU frontend bandwidth, author: Fan Yang
-    //--------------------------------------------------------------------
-    if (cpu->pmu.flag_start == 1)
-        cpu->pmu.FrontEndLevel[cpu->pmu.block_index][1] += (issueWidth - numInst);
     
     //cout << cpu->pmu.workingCycles[cpu->pmu.block_index] << endl;
     
