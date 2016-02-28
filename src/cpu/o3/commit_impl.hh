@@ -1192,7 +1192,7 @@ DefaultCommit<Impl>::commitInsts()
                     else
                         cpu->pmu.flag_start = 1;
                     cout << "Commit pmubarrier! " << operands[0] << " " << operands[1] << endl;
-                    cout << "flag: " << cpu->pmu.flag_start << " " << cpu->pmu.block_index << " ";
+                    cout << "flag: " << cpu->pmu.flag_start << " " << cpu->pmu.block_index << " " << operands[0] << " " << operands[1] << endl;
                     cout << "commit sn: " << head_inst->seqNum << endl;
                 }
             
