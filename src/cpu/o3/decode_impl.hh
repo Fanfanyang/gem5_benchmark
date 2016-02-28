@@ -764,6 +764,10 @@ DefaultDecode<Impl>::decodeInsts(ThreadID tid)
             cpu->pmu.FrontEndLevel[cpu->pmu.block_index][1] += (issueWidth - decodeWidth);
     }
 
+    
+    if (cpu->pmu.flag_start == 1)
+        cpu->pmu.FrontEndLevel[cpu->pmu.block_index][2] += toRenameIndex;
+    
     // Record that decode has written to the time buffer for activity
     // tracking.
     if (toRenameIndex) {

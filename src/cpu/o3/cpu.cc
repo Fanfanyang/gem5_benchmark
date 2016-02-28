@@ -561,14 +561,14 @@ FullO3CPU<Impl>::regStats()
     pmu.TopDownAnalysis.ysubnames(BlockName);
     
     pmu.FrontEndLevel
-        .init(pmu.TotalBlocks,2)
+        .init(pmu.TotalBlocks,3)
         .name(name() + ".pmu.FrontEndLevel")
         .desc("Front end level ")
         .flags(total | pdf | dist)
         ;
     
-    const char* FrontEndLevel_type[] = {"Latency","Bandwidth","InvalidThreadID"};
-    pmu.CommitCycles.ysubnames(FrontEndLevel_type);
+    const char* FrontEndLevel_type[] = {"Latency","Bandwidth","UsefulSlots"};
+    pmu.FrontEndLevel.ysubnames(FrontEndLevel_type);
     
     pmu.CommitCycles
         .init(pmu.TotalBlocks,7)
