@@ -268,6 +268,7 @@ class DefaultDecode
 
     /** The width of decode, in instructions. */
     unsigned decodeWidth;
+    unsigned issueWidth;
 
     /** Index of instructions being sent to rename. */
     unsigned toRenameIndex;

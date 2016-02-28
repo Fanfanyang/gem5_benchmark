@@ -783,7 +783,7 @@ DefaultFetch<Impl>::doSquash(const TheISA::PCState &newPC,
     // PMU frontend squash latency, author: Fan Yang
     //--------------------------------------------------------------------
     if (cpu->pmu.flag_start == 1)
-        cpu->pmu.FrontEndLevel[cpu->pmu.block_index][0] += (issueWidth + fetchQueue[tid].size());
+        cpu->pmu.FrontEndLevel[cpu->pmu.block_index][0] += fetchQueue[tid].size();
     //cout << fetchQueue[tid].size() << endl;
     
     // Empty fetch queue
@@ -1430,7 +1430,10 @@ DefaultFetch<Impl>::fetch(bool &status_change)
         if (cpu->pmu.flag_start == 1)
             cpu->pmu.FrontEndLevel[cpu->pmu.block_index][0] += (issueWidth - numInst);
         
+    } else if (fetchQueue[tid].size() >= fetchQueueSize) {
+        DPRINTF(Fetch, "[tid:%i]: Done fetching, reached the limit of fetch queue (config.ini), BE stall.\n", tid);
     } else {
+        DPRINTF(Fetch, "[tid:%i]: Done fetching, has issued all insts in this block, blkOffset == numInsts\n", tid);
         if (cpu->pmu.flag_start == 1)
             cpu->pmu.FrontEndLevel[cpu->pmu.block_index][0] += (issueWidth - numInst);
     }

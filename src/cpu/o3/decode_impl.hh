@@ -66,6 +66,7 @@ DefaultDecode<Impl>::DefaultDecode(O3CPU *_cpu, DerivO3CPUParams *params)
       commitToDecodeDelay(params->commitToDecodeDelay),
       fetchToDecodeDelay(params->fetchToDecodeDelay),
       decodeWidth(params->decodeWidth),
+      issueWidth(params->issueWidth),
       numThreads(params->numThreads)
 {
     if (decodeWidth > Impl::MaxWidth)
@@ -675,6 +676,12 @@ DefaultDecode<Impl>::decodeInsts(ThreadID tid)
             ++decodeSquashedInsts;
 
             --insts_available;
+            
+            //--------------------------------------------------------------------
+            // PMU frontend squash latency, author: Fan Yang
+            //--------------------------------------------------------------------
+            if (cpu->pmu.flag_start == 1)
+                cpu->pmu.FrontEndLevel[cpu->pmu.block_index][0]++;
 
             continue;
         }
@@ -749,6 +756,12 @@ DefaultDecode<Impl>::decodeInsts(ThreadID tid)
     // and put all those instructions into the skid buffer.
     if (!insts_to_decode.empty()) {
         block(tid);
+        
+        //--------------------------------------------------------------------
+        // PMU frontend bandwidth, author: Fan Yang
+        //--------------------------------------------------------------------
+        if ((cpu->pmu.flag_start == 1)&&(toRenameIndex >= decodeWidth))
+            cpu->pmu.FrontEndLevel[cpu->pmu.block_index][1] += (issueWidth - decodeWidth);
     }
 
     // Record that decode has written to the time buffer for activity
