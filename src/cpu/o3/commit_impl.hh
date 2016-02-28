@@ -1185,12 +1185,19 @@ DefaultCommit<Impl>::commitInsts()
                     int operands[2];
                     operands[0] = head_inst->readIntRegOperand(head_inst->staticInst.get(), 4); // the first operand, value
                     operands[1] = head_inst->readIntRegOperand(head_inst->staticInst.get(), 3); // the second operand, index
-                    
+                    if (operands[0] != (-1)) {
+                        cpu->pmu.block_index = operands[0];
+                        cpu->pmu.flag_start = 1;
+                    }
+                    else
+                        cpu->pmu.flag_start = 0;
+                    /*
                     cpu->pmu.block_index = operands[0];
                     if (operands[0] == operands[1])
                         cpu->pmu.flag_start = 0;
                     else
                         cpu->pmu.flag_start = 1;
+                     */
                     cout << "Commit pmubarrier! " << operands[0] << " " << operands[1] << endl;
                     cout << "flag: " << cpu->pmu.flag_start << " " << cpu->pmu.block_index << " " << operands[0] << " " << operands[1] << endl;
                     cout << "commit sn: " << head_inst->seqNum << endl;
