@@ -1770,8 +1770,10 @@ DefaultCommit<Impl>::updateComInstStats(DynInstPtr &inst)
             cpu->pmu.commit_instructions[cpu->pmu.block_index][1]++;
         if (inst->isFloating())
             cpu->pmu.commit_instructions[cpu->pmu.block_index][2]++;
+        if (inst->isControl())
+            cpu->pmu.commit_instructions[cpu->pmu.block_index][3]++;
     }
-        
+    
     // Function Calls
     if (inst->isCall()) {
         statComFunctionCalls[tid]++;

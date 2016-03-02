@@ -608,7 +608,7 @@ FullO3CPU<Impl>::regStats()
         .flags(total | pdf | dist)
         ;
     pmu.commit_instructions
-        .init(pmu.TotalBlocks,3)
+        .init(pmu.TotalBlocks,4)
         .name(name() + ".pmu.commit_instructions")
         .desc("pmu commit_instructions for power")
         .flags(total | pdf | dist)
@@ -693,6 +693,15 @@ FullO3CPU<Impl>::regStats()
         ;
     const char* IcacheAccess_type[] = {"access","miss","conflict"};
     pmu.IcacheAccess.ysubnames(IcacheAccess_type);
+    
+    pmu.DcacheAccess
+        .init(pmu.TotalBlocks,5)
+        .name(name() + ".pmu.DcacheAccess")
+        .desc("pmu DcacheAccess for power")
+        .flags(total | pdf | dist)
+        ;
+    const char* DcacheAccess_type[] = {"read_access","write_access","read_miss","write_miss","conflict"};
+    pmu.DcacheAccess.ysubnames(DcacheAccess_type);
 }
 
 template <class Impl>

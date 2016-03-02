@@ -767,6 +767,8 @@ LSQUnit<Impl>::read(Request *req, Request *sreqLow, Request *sreqHigh,
     DPRINTF(LSQUnit, "Doing memory access for inst [sn:%lli] PC %s\n",
             load_inst->seqNum, load_inst->pcState());
 
+    load_inst->MemAccessCycle[0] = (curTick() - load_inst->fetchTick)/500;
+    
     // Allocate memory if this is the first time a load is issued.
     if (!load_inst->memData) {
         load_inst->memData = new uint8_t[req->getSize()];
@@ -883,6 +885,8 @@ LSQUnit<Impl>::write(Request *req, Request *sreqLow, Request *sreqHigh,
             " | storeHead:%i [sn:%i]\n",
             store_idx, req->getPaddr(), storeHead,
             storeQueue[store_idx].inst->seqNum);
+    
+    storeQueue[store_idx].inst->MemAccessCycle[0] = (curTick() - storeQueue[store_idx].inst->fetchTick)/500;
 
     storeQueue[store_idx].req = req;
     storeQueue[store_idx].sreqLow = sreqLow;

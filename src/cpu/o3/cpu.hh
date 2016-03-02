@@ -257,7 +257,7 @@ class FullO3CPU : public BaseO3CPU
         Stats::Vector iqInstsIssued;
         Stats::Vector2d fu_instructions;        // int,fp,load,store
         Stats::Vector2d branch_instructions;    // branch, branch_mis
-        Stats::Vector2d commit_instructions;    // total, int, fp
+        Stats::Vector2d commit_instructions;    // total,int,fp,branch
         Stats::Vector2d robOperation;
         Stats::Vector renameReads;
         Stats::Vector fpReads;
@@ -269,6 +269,7 @@ class FullO3CPU : public BaseO3CPU
         Stats::Vector sysCalls;
         Stats::Vector2d AluAccess;              //int,fp
         Stats::Vector2d IcacheAccess;           //access,miss,conflict (miss,conflict has problem)
+        Stats::Vector2d DcacheAccess;           //read_access,write_access,read_miss,write_miss,conflict
         
       public:
         PMU(unsigned width):issuedcycle(0),recovery_cycles(0),pipeline_width(0),flag_start(0),TotalBlocks(8),block_index(0)

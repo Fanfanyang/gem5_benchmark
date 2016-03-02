@@ -143,6 +143,7 @@ class BaseO3DynInst : public BaseDynInst<Impl>
     int CompleteCycle;
     int ROBHeadCycle;
     int CommitCycle;
+    int MemAccessCycle[2];      // load doing mem access, write mem access, writeback event
     
     int64_t IssuedCycle_absolute;
     

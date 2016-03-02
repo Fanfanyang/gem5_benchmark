@@ -143,6 +143,8 @@ BaseO3DynInst<Impl>::initVars()
     CompleteCycle = -1;
     ROBHeadCycle = -1;
     CommitCycle = -1;
+    MemAccessCycle[0] = -1;
+    MemAccessCycle[1] = -1;
     
     IssuedCycle_absolute = -1;
     

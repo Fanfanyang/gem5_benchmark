@@ -99,6 +99,8 @@ LSQUnit<Impl>::completeDataAccess(PacketPtr pkt)
     DPRINTF(IEW, "Writeback event [sn:%lli].\n", inst->seqNum);
     DPRINTF(Activity, "Activity: Writeback event [sn:%lli].\n", inst->seqNum);
 
+    inst->MemAccessCycle[1] = (curTick() - inst->fetchTick)/500;
+    
     if (state->cacheBlocked) {
         // This is the first half of a previous split load,
         // where the 2nd half blocked, ignore this response
@@ -115,6 +117,21 @@ LSQUnit<Impl>::completeDataAccess(PacketPtr pkt)
 
     assert(!cpu->switchedOut());
     if (!inst->isSquashed()) {
+        
+        //--------------------------------------------------------------------
+        // 3. PMU for power, author: Fan Yang
+        //--------------------------------------------------------------------
+        if (cpu->pmu.flag_start) {
+            if (inst->isLoad()) {
+                cpu->pmu.DcacheAccess[cpu->pmu.block_index][0]++;
+                if ((inst->MemAccessCycle[1] - inst->MemAccessCycle[0]) > 2)
+                    cpu->pmu.DcacheAccess[cpu->pmu.block_index][2]++;
+            }
+            if (inst->isStore()) {
+                cpu->pmu.DcacheAccess[cpu->pmu.block_index][1]++;
+            }
+        }
+        
         if (!state->noWB) {
             if (!TheISA::HasUnalignedMemAcc || !state->isSplit ||
                 !state->isLoad) {
