@@ -1000,6 +1000,9 @@ DefaultCommit<Impl>::commit()
                     //cout << "recovery cycles: " << cpu->pmu.recovery_cycles << " " << curTick()/500 << " " << cpu->pmu.issuedcycle << endl;
                 }
                 
+                if (cpu->pmu.flag_start == 1)
+                    cpu->pmu.branch_instructions[cpu->pmu.block_index][1]++;
+                
             } else {
                 DPRINTF(Commit,
                     "[tid:%i]: Squashing due to order violation [sn:%i]\n",
@@ -1670,6 +1673,11 @@ DefaultCommit<Impl>::updateComInstStats(DynInstPtr &inst)
         YangCommittedInsts[tid][0]++;
     }
     
+    if (cpu->pmu.flag_start == 1) {
+        if (inst->isCondCtrl())
+            cpu->pmu.branch_instructions[cpu->pmu.block_index][0]++;
+    }
+    
     inst->CommitCycle = (curTick() - inst->fetchTick)/500;
     
     if (inst->isMemRef())
@@ -1715,6 +1723,7 @@ DefaultCommit<Impl>::updateComInstStats(DynInstPtr &inst)
         if (cpu->pmu.flag_start == 1) {
             cpu->pmu.committedInsts[cpu->pmu.block_index]++;
             cpu->pmu.committedInsts[cpu->pmu.TotalBlocks-1]++;
+            cpu->pmu.commit_instructions[cpu->pmu.block_index][0]++;
         }
     }
     opsCommitted[tid]++;
@@ -1747,16 +1756,30 @@ DefaultCommit<Impl>::updateComInstStats(DynInstPtr &inst)
     }
 
     // Integer Instruction
-    if (inst->isInteger())
+    if (inst->isInteger()) {
         statComInteger[tid]++;
+    }
 
     // Floating Point Instruction
-    if (inst->isFloating())
+    if (inst->isFloating()) {
         statComFloating[tid]++;
-
+    }
+    
+    if ((!inst->isMicroop() || inst->isLastMicroop())&&(cpu->pmu.flag_start == 1)) {
+        if (inst->isInteger())
+            cpu->pmu.commit_instructions[cpu->pmu.block_index][1]++;
+        if (inst->isFloating())
+            cpu->pmu.commit_instructions[cpu->pmu.block_index][2]++;
+    }
+        
     // Function Calls
-    if (inst->isCall())
+    if (inst->isCall()) {
         statComFunctionCalls[tid]++;
+        
+        if ((cpu->pmu.flag_start == 1)&&(!inst->isMicroop() || inst->isLastMicroop())) {
+            cpu->pmu.functionCalls[cpu->pmu.block_index]++;
+        }
+    }
 
 }
 

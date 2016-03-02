@@ -1181,7 +1181,10 @@ DefaultFetch<Impl>::fetch(bool &status_change)
     // to tick() function.
     if (fetchStatus[tid] == IcacheAccessComplete) {
         DPRINTF(Fetch, "[tid:%i]: Icache miss is complete.\n", tid);
-
+        
+        if (cpu->pmu.flag_start == 1)
+            cpu->pmu.IcacheAccess[cpu->pmu.block_index][0]++;
+        
         fetchStatus[tid] = Running;
         status_change = true;
     } else if (fetchStatus[tid] == Running) {
@@ -1196,6 +1199,11 @@ DefaultFetch<Impl>::fetch(bool &status_change)
             DPRINTF(Fetch, "[tid:%i]: Attempting to translate and read "
                     "instruction, starting at PC %s.\n", tid, thisPC);
 
+            if (cpu->pmu.flag_start == 1) {
+                cpu->pmu.IcacheAccess[cpu->pmu.block_index][1]++;
+                cpu->pmu.IcacheAccess[cpu->pmu.block_index][2]++;
+            }
+            
             fetchCacheLine(fetchAddr, tid, thisPC.instAddr());
 
             if (fetchStatus[tid] == IcacheWaitResponse)

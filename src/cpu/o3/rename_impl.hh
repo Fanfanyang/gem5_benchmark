@@ -1050,12 +1050,22 @@ DefaultRename<Impl>::renameSrcRegs(DynInstPtr &inst, ThreadID tid)
             flat_rel_src_reg = tc->flattenIntIndex(rel_src_reg);
             renamed_reg = map->lookupInt(flat_rel_src_reg);
             intRenameLookups++;
+            //------------------------------------------------------------------------------
+            // PMU, power consumption mcpat, author: Fan Yang
+            //------------------------------------------------------------------------------
+            if (cpu->pmu.flag_start == 1)
+                cpu->pmu.renameReads[cpu->pmu.block_index]++;
             break;
 
           case FloatRegClass:
             flat_rel_src_reg = tc->flattenFloatIndex(rel_src_reg);
             renamed_reg = map->lookupFloat(flat_rel_src_reg);
             fpRenameLookups++;
+            //------------------------------------------------------------------------------
+            // PMU, power consumption mcpat, author: Fan Yang
+            //------------------------------------------------------------------------------
+            if (cpu->pmu.flag_start == 1)
+                cpu->pmu.fpReads[cpu->pmu.block_index]++;
             break;
 
           case CCRegClass:
@@ -1091,6 +1101,11 @@ DefaultRename<Impl>::renameSrcRegs(DynInstPtr &inst, ThreadID tid)
         }
 
         ++renameRenameLookups;
+        //------------------------------------------------------------------------------
+        // PMU, power consumption mcpat, author: Fan Yang
+        //------------------------------------------------------------------------------
+        if (cpu->pmu.flag_start == 1)
+            cpu->pmu.renameLookups[cpu->pmu.block_index]++;
     }
 }
 
@@ -1171,6 +1186,11 @@ DefaultRename<Impl>::renameDestRegs(DynInstPtr &inst, ThreadID tid)
                             rename_result.second);
 
         ++renameRenamedOperands;
+        //------------------------------------------------------------------------------
+        // PMU, power consumption mcpat, author: Fan Yang
+        //------------------------------------------------------------------------------
+        if (cpu->pmu.flag_start == 1)
+            cpu->pmu.renameOperands[cpu->pmu.block_index]++;
     }
 }
 

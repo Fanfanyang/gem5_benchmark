@@ -597,6 +597,14 @@ void
 InstructionQueue<Impl>::insert(DynInstPtr &new_inst)
 {
     new_inst->isFloating() ? fpInstQueueWrites++ : intInstQueueWrites++;
+    
+    if (cpu->pmu.flag_start == 1) {
+        if (new_inst->isFloating())
+            cpu->pmu.instwindowOperation[cpu->pmu.block_index][4]++;
+        else
+            cpu->pmu.instwindowOperation[cpu->pmu.block_index][1]++;
+    }
+
     // Make sure the instruction is valid
     assert(new_inst);
 
@@ -674,7 +682,17 @@ InstructionQueue<Impl>::insertNonSpec(DynInstPtr &new_inst)
     // @todo: Clean up this code; can do it by setting inst as unable
     // to issue, then calling normal insert on the inst.
     new_inst->isFloating() ? fpInstQueueWrites++ : intInstQueueWrites++;
-
+    
+    //------------------------------------------------------------------------------
+    // PMU, power consumption mcpat, author: Fan Yang
+    //------------------------------------------------------------------------------
+    if (cpu->pmu.flag_start == 1) {
+        if (new_inst->isFloating())
+            cpu->pmu.instwindowOperation[cpu->pmu.block_index][4]++;
+        else
+            cpu->pmu.instwindowOperation[cpu->pmu.block_index][1]++;
+    }
+    
     assert(new_inst);
 
     nonSpecInsts[new_inst->seqNum] = new_inst;
@@ -726,8 +744,17 @@ InstructionQueue<Impl>::getInstToExecute()
     instsToExecute.pop_front();
     if (inst->isFloating()){
         fpInstQueueReads++;
+        
+        if (cpu->pmu.flag_start == 1)
+            cpu->pmu.instwindowOperation[cpu->pmu.block_index][3]++;
+        
     } else {
         intInstQueueReads++;
+        //------------------------------------------------------------------------------
+        // PMU, power consumption mcpat, author: Fan Yang
+        //------------------------------------------------------------------------------
+        if (cpu->pmu.flag_start == 1)
+            cpu->pmu.instwindowOperation[cpu->pmu.block_index][0]++;
     }
     return inst;
 }
@@ -848,6 +875,16 @@ InstructionQueue<Impl>::scheduleReadyInsts()
         DynInstPtr issuing_inst = readyInsts[op_class].top();
 
         issuing_inst->isFloating() ? fpInstQueueReads++ : intInstQueueReads++;
+        
+        //------------------------------------------------------------------------------
+        // PMU, power consumption mcpat, author: Fan Yang
+        //------------------------------------------------------------------------------
+        if (cpu->pmu.flag_start == 1) {
+            if (issuing_inst->isFloating())
+                cpu->pmu.instwindowOperation[cpu->pmu.block_index][3]++;
+            else
+                cpu->pmu.instwindowOperation[cpu->pmu.block_index][0]++;
+        }
 
         assert(issuing_inst->seqNum == (*order_it).oldestInst);
 
@@ -883,6 +920,14 @@ InstructionQueue<Impl>::scheduleReadyInsts()
         if (op_class != No_OpClass) {
             idx = fuPool->getUnit(op_class);
             issuing_inst->isFloating() ? fpAluAccesses++ : intAluAccesses++;
+            
+            if (cpu->pmu.flag_start == 1) {
+                if (issuing_inst->isFloating())
+                    cpu->pmu.AluAccess[cpu->pmu.block_index][1]++;
+                else
+                    cpu->pmu.AluAccess[cpu->pmu.block_index][0]++;
+            }
+            
             if (idx > -1) {
                 op_latency = fuPool->getOpLatency(op_class);
             }
@@ -961,6 +1006,16 @@ InstructionQueue<Impl>::scheduleReadyInsts()
 
             listOrder.erase(order_it++);
             statIssuedInstType[tid][op_class]++;
+            if (cpu->pmu.flag_start == 1) {
+                if ((op_class==0)||(op_class==6)||(op_class==7)||(op_class==8)||(op_class==37))
+                    cpu->pmu.fu_instructions[cpu->pmu.block_index][0]++;
+                if ((op_class==9)||(op_class==10)||(op_class==11)||(op_class==12)||(op_class==13)||(op_class==14))
+                    cpu->pmu.fu_instructions[cpu->pmu.block_index][1]++;
+                if ((op_class==35)||(op_class==38))
+                    cpu->pmu.fu_instructions[cpu->pmu.block_index][2]++;
+                if (op_class == 36)
+                    cpu->pmu.fu_instructions[cpu->pmu.block_index][3]++;
+            }
         } else {
             statFuBusy[op_class]++;
             fuBusy[tid]++;
@@ -974,6 +1029,7 @@ InstructionQueue<Impl>::scheduleReadyInsts()
     if (cpu->pmu.flag_start == 1) {
         cpu->pmu.issuedInsts[cpu->pmu.block_index] += total_issued;
         cpu->pmu.issuedInsts[cpu->pmu.TotalBlocks-1] += total_issued;
+        cpu->pmu.iqInstsIssued[cpu->pmu.block_index] += total_issued;
     }
 
     // If we issued any instructions, tell the CPU we had activity.
@@ -1042,8 +1098,15 @@ InstructionQueue<Impl>::wakeDependents(DynInstPtr &completed_inst)
     // The instruction queue here takes care of both floating and int ops
     if (completed_inst->isFloating()) {
         fpInstQueueWakeupQccesses++;
+        
+        if (cpu->pmu.flag_start == 1)
+            cpu->pmu.instwindowOperation[cpu->pmu.block_index][5]++;
+        
     } else {
         intInstQueueWakeupAccesses++;
+        
+        if (cpu->pmu.flag_start == 1)
+            cpu->pmu.instwindowOperation[cpu->pmu.block_index][2]++;
     }
 
     DPRINTF(IQ, "Waking dependents of completed instruction.\n");
@@ -1248,6 +1311,10 @@ InstructionQueue<Impl>::violation(DynInstPtr &store,
                                   DynInstPtr &faulting_load)
 {
     intInstQueueWrites++;
+    
+    if (cpu->pmu.flag_start == 1)
+        cpu->pmu.instwindowOperation[cpu->pmu.block_index][1]++;
+    
     memDepUnit[store->threadNumber].violation(store, faulting_load);
 }
 
@@ -1290,6 +1357,13 @@ InstructionQueue<Impl>::doSquash(ThreadID tid)
         DynInstPtr squashed_inst = (*squash_it);
         squashed_inst->isFloating() ? fpInstQueueWrites++ : intInstQueueWrites++;
 
+        if (cpu->pmu.flag_start == 1) {
+            if (squashed_inst->isFloating())
+                cpu->pmu.instwindowOperation[cpu->pmu.block_index][4]++;
+            else
+                cpu->pmu.instwindowOperation[cpu->pmu.block_index][1]++;
+        }
+        
         // Only handle the instruction if it actually is in the IQ and
         // hasn't already been squashed in the IQ.
         if (squashed_inst->threadNumber != tid ||

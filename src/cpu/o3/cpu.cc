@@ -540,16 +540,9 @@ FullO3CPU<Impl>::regStats()
         .prereq(miscRegfileWrites);
     
     //------------------------------------------------------------------------------
-    // PMU, CPU working cycles, author: Fan Yang
+    // PMU, author: Fan Yang
     //------------------------------------------------------------------------------
-    /*
-    pmu.pmu_test
-        .init(pmu.TotalBlocks,4)
-        .name(name() + ".pmu.tests")
-        .desc("Test the function correctness")
-        .flags(total | pdf | dist)
-        ;
-    */
+
     pmu.TopDownAnalysis
         .init(pmu.TotalBlocks,4)
         .name(name() + ".pmu.TopDownAnalysis")
@@ -580,6 +573,126 @@ FullO3CPU<Impl>::regStats()
     const char* cycles_type[] = {"CWlimit","ROBempty","Block_ld","Block_st","Block_ctrl","Block_alu","Unblock"};
     pmu.CommitCycles.ysubnames(cycles_type);      // for renaming
     
+    //------------------------------------------------------------------------------
+    // PMU, power consumption mcpat, author: Fan Yang
+    //------------------------------------------------------------------------------
+    
+    pmu.numCycles
+        .init(pmu.TotalBlocks)
+        .name(name() + ".pmu.numCycles")
+        .desc("pmu working cycles for power")
+        .flags(pdf | dist)
+        ;
+    pmu.idleCycles
+        .init(pmu.TotalBlocks)
+        .name(name() + ".pmu.idleCycles")
+        .desc("pmu idleCycles for power")
+        .flags(pdf | dist)
+        ;
+    pmu.iqInstsIssued
+        .init(pmu.TotalBlocks)
+        .name(name() + ".pmu.iqInstsIssued")
+        .desc("pmu iqInstsIssued for power")
+        .flags(pdf | dist)
+        ;
+    pmu.fu_instructions
+        .init(pmu.TotalBlocks,4)
+        .name(name() + ".pmu.fu_instructions")
+        .desc("pmu fu_instructions for power")
+        .flags(total | pdf | dist)
+        ;
+    pmu.branch_instructions
+        .init(pmu.TotalBlocks,2)
+        .name(name() + ".pmu.branch_instructions")
+        .desc("pmu branch_instructions for power")
+        .flags(total | pdf | dist)
+        ;
+    pmu.commit_instructions
+        .init(pmu.TotalBlocks,3)
+        .name(name() + ".pmu.commit_instructions")
+        .desc("pmu commit_instructions for power")
+        .flags(total | pdf | dist)
+        ;
+    pmu.robOperation
+        .init(pmu.TotalBlocks,2)
+        .name(name() + ".pmu.robOperation")
+        .desc("pmu robOperation for power")
+        .flags(total | pdf | dist)
+        ;
+    const char* robOperation_type[] = {"robReads","robWrites"};
+    pmu.robOperation.ysubnames(robOperation_type);
+    
+    pmu.renameReads
+        .init(pmu.TotalBlocks)
+        .name(name() + ".pmu.renameReads")
+        .desc("pmu renameReads for power")
+        .flags(pdf | dist)
+        ;
+    pmu.fpReads
+        .init(pmu.TotalBlocks)
+        .name(name() + ".pmu.fpReads")
+        .desc("pmu fpReads for power")
+        .flags(pdf | dist)
+        ;
+    pmu.renameOperands
+        .init(pmu.TotalBlocks)
+        .name(name() + ".pmu.renameOperands")
+        .desc("pmu renameOperands for power")
+        .flags(pdf | dist)
+        ;
+    pmu.renameLookups
+        .init(pmu.TotalBlocks)
+        .name(name() + ".pmu.renameLookups")
+        .desc("pmu renameLookups for power")
+        .flags(pdf | dist)
+        ;
+    pmu.instwindowOperation
+        .init(pmu.TotalBlocks,6)
+        .name(name() + ".pmu.instwindowOperation")
+        .desc("pmu instwindowOperation for power")
+        .flags(total | pdf | dist)
+        ;
+    const char* instwindowOperation_type[] = {"intRead","intWrite","intWake","floatRead","floatWrite","floatWake"};
+    pmu.instwindowOperation.ysubnames(instwindowOperation_type);
+    
+    pmu.RegfileOperation
+        .init(pmu.TotalBlocks,4)
+        .name(name() + ".pmu.RegfileOperation")
+        .desc("pmu RegfileOperation for power")
+        .flags(total | pdf | dist)
+        ;
+    const char* RegfileOperation_type[] = {"intRead","fpRead","intWrite","fpWrite"};
+    pmu.RegfileOperation.ysubnames(RegfileOperation_type);
+    
+    pmu.functionCalls
+        .init(pmu.TotalBlocks)
+        .name(name() + ".pmu.functionCalls")
+        .desc("pmu functionCalls for power")
+        .flags(pdf | dist)
+        ;
+    pmu.sysCalls
+        .init(pmu.TotalBlocks)
+        .name(name() + ".pmu.sysCalls")
+        .desc("pmu sysCalls for power")
+        .flags(pdf | dist)
+        ;
+    pmu.AluAccess
+        .init(pmu.TotalBlocks,2)
+        .name(name() + ".pmu.AluAccess")
+        .desc("pmu AluAccess for power")
+        .flags(total | pdf | dist)
+        ;
+    const char* AluAccess_type[] = {"int","fp"};
+    pmu.AluAccess.ysubnames(AluAccess_type);
+    
+    pmu.IcacheAccess
+        .init(pmu.TotalBlocks,3)
+        .name(name() + ".pmu.IcacheAccess")
+        .desc("pmu IcacheAccess for power")
+        .flags(total | pdf | dist)
+        ;
+    const char* IcacheAccess_type[] = {"access","miss","conflict"};
+    pmu.IcacheAccess.ysubnames(IcacheAccess_type);
 }
 
 template <class Impl>
@@ -596,6 +709,7 @@ FullO3CPU<Impl>::tick()
     if (pmu.flag_start == 1) {
         ++pmu.workingCycles[pmu.block_index];
         ++pmu.workingCycles[pmu.TotalBlocks-1];
+        ++pmu.numCycles[pmu.block_index];
         
         pmu.Uops_not_delivered[0] = pmu.renameIdle_starved[pmu.block_index] + pmu.renameRun_starved[pmu.block_index];    // computed in rename
         pmu.insts_issued_not_committed[0] = pmu.issuedInsts[pmu.block_index] - pmu.committedInsts[pmu.block_index];
@@ -1461,6 +1575,10 @@ FullO3CPU<Impl>::syscall(int64_t callnum, ThreadID tid)
 
     DPRINTF(Activity,"Activity: syscall() called.\n");
 
+    if (pmu.flag_start == 1) {
+        pmu.sysCalls[pmu.block_index]++;
+    }
+    
     // Temporarily increase this by one to account for the syscall
     // instruction.
     ++(this->thread[tid]->funcExeInst);
@@ -1730,6 +1848,11 @@ uint64_t
 FullO3CPU<Impl>::readIntReg(int reg_idx)
 {
     intRegfileReads++;
+    
+    if (pmu.flag_start == 1) {
+        ++pmu.RegfileOperation[pmu.block_index][0];
+    }
+    
     return regFile.readIntReg(reg_idx);
 }
 
@@ -1763,6 +1886,11 @@ FloatReg
 FullO3CPU<Impl>::readFloatReg(int reg_idx)
 {
     fpRegfileReads++;
+    
+    if (pmu.flag_start == 1) {
+        ++pmu.RegfileOperation[pmu.block_index][1];
+    }
+    
     return regFile.readFloatReg(reg_idx);
 }
 
@@ -1771,6 +1899,11 @@ FloatRegBits
 FullO3CPU<Impl>::readFloatRegBits(int reg_idx)
 {
     fpRegfileReads++;
+    
+    if (pmu.flag_start == 1) {
+        ++pmu.RegfileOperation[pmu.block_index][1];
+    }
+    
     return regFile.readFloatRegBits(reg_idx);
 }
 
@@ -1787,6 +1920,11 @@ void
 FullO3CPU<Impl>::setIntReg(int reg_idx, uint64_t val)
 {
     intRegfileWrites++;
+    
+    if (pmu.flag_start == 1) {
+        ++pmu.RegfileOperation[pmu.block_index][2];
+    }
+    
     regFile.setIntReg(reg_idx, val);
 }
 
@@ -1795,6 +1933,11 @@ void
 FullO3CPU<Impl>::setFloatReg(int reg_idx, FloatReg val)
 {
     fpRegfileWrites++;
+    
+    if (pmu.flag_start == 1) {
+        ++pmu.RegfileOperation[pmu.block_index][3];
+    }
+    
     regFile.setFloatReg(reg_idx, val);
 }
 
@@ -1803,6 +1946,11 @@ void
 FullO3CPU<Impl>::setFloatRegBits(int reg_idx, FloatRegBits val)
 {
     fpRegfileWrites++;
+    
+    if (pmu.flag_start == 1) {
+        ++pmu.RegfileOperation[pmu.block_index][3];
+    }
+    
     regFile.setFloatRegBits(reg_idx, val);
 }
 
@@ -1819,6 +1967,11 @@ uint64_t
 FullO3CPU<Impl>::readArchIntReg(int reg_idx, ThreadID tid)
 {
     intRegfileReads++;
+    
+    if (pmu.flag_start == 1) {
+        ++pmu.RegfileOperation[pmu.block_index][0];
+    }
+    
     PhysRegIndex phys_reg = commitRenameMap[tid].lookupInt(reg_idx);
 
     return regFile.readIntReg(phys_reg);
@@ -1829,6 +1982,11 @@ float
 FullO3CPU<Impl>::readArchFloatReg(int reg_idx, ThreadID tid)
 {
     fpRegfileReads++;
+    
+    if (pmu.flag_start == 1) {
+        ++pmu.RegfileOperation[pmu.block_index][1];
+    }
+    
     PhysRegIndex phys_reg = commitRenameMap[tid].lookupFloat(reg_idx);
 
     return regFile.readFloatReg(phys_reg);
@@ -1839,6 +1997,11 @@ uint64_t
 FullO3CPU<Impl>::readArchFloatRegInt(int reg_idx, ThreadID tid)
 {
     fpRegfileReads++;
+    
+    if (pmu.flag_start == 1) {
+        ++pmu.RegfileOperation[pmu.block_index][1];
+    }
+    
     PhysRegIndex phys_reg = commitRenameMap[tid].lookupFloat(reg_idx);
 
     return regFile.readFloatRegBits(phys_reg);
@@ -1859,6 +2022,11 @@ void
 FullO3CPU<Impl>::setArchIntReg(int reg_idx, uint64_t val, ThreadID tid)
 {
     intRegfileWrites++;
+    
+    if (pmu.flag_start == 1) {
+        ++pmu.RegfileOperation[pmu.block_index][2];
+    }
+    
     PhysRegIndex phys_reg = commitRenameMap[tid].lookupInt(reg_idx);
 
     regFile.setIntReg(phys_reg, val);
@@ -1869,6 +2037,11 @@ void
 FullO3CPU<Impl>::setArchFloatReg(int reg_idx, float val, ThreadID tid)
 {
     fpRegfileWrites++;
+    
+    if (pmu.flag_start == 1) {
+        ++pmu.RegfileOperation[pmu.block_index][3];
+    }
+    
     PhysRegIndex phys_reg = commitRenameMap[tid].lookupFloat(reg_idx);
 
     regFile.setFloatReg(phys_reg, val);
@@ -1879,6 +2052,11 @@ void
 FullO3CPU<Impl>::setArchFloatRegInt(int reg_idx, uint64_t val, ThreadID tid)
 {
     fpRegfileWrites++;
+    
+    if (pmu.flag_start == 1) {
+        ++pmu.RegfileOperation[pmu.block_index][3];
+    }
+    
     PhysRegIndex phys_reg = commitRenameMap[tid].lookupFloat(reg_idx);
 
     regFile.setFloatRegBits(phys_reg, val);
@@ -2156,6 +2334,11 @@ FullO3CPU<Impl>::wakeCPU()
         idleCycles += cycles;
         numCycles += cycles;
         ppCycles->notify(cycles);
+        
+        if (pmu.flag_start == 1) {
+            ++pmu.numCycles[pmu.block_index];
+            ++pmu.idleCycles[pmu.block_index];
+        }
     }
 
     schedule(tickEvent, clockEdge());

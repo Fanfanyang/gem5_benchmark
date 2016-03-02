@@ -235,14 +235,12 @@ class FullO3CPU : public BaseO3CPU
         vector<int64_t> issuedInsts;
         vector<int64_t> committedInsts;
         vector<int64_t> mispredicted_recover_cycle;
-        //vector<int64_t> frontend_bandwidth;
         int64_t Uops_not_delivered[2];
         int64_t insts_issued_not_committed[2];
         float FE[2];
         float BS[2];
         float RE[2];
         float BE[2];
-        
         Stats::Vector2d TopDownAnalysis;
         Stats::Vector2d FrontEndLevel;
         Stats::Vector2d CommitCycles;
@@ -252,6 +250,25 @@ class FullO3CPU : public BaseO3CPU
         int flag_start;
         int TotalBlocks;
         int block_index;
+        
+        // PMU for power
+        Stats::Vector numCycles;
+        Stats::Vector idleCycles;
+        Stats::Vector iqInstsIssued;
+        Stats::Vector2d fu_instructions;        // int,fp,load,store
+        Stats::Vector2d branch_instructions;    // branch, branch_mis
+        Stats::Vector2d commit_instructions;    // total, int, fp
+        Stats::Vector2d robOperation;
+        Stats::Vector renameReads;
+        Stats::Vector fpReads;
+        Stats::Vector renameOperands;
+        Stats::Vector renameLookups;
+        Stats::Vector2d instwindowOperation;    // int_read,int_write,int_wake,fp_read,fp_write,fp_wake
+        Stats::Vector2d RegfileOperation;       // int_read,fp_read,int_write,fp_write
+        Stats::Vector functionCalls;
+        Stats::Vector sysCalls;
+        Stats::Vector2d AluAccess;              //int,fp
+        Stats::Vector2d IcacheAccess;           //access,miss,conflict (miss,conflict has problem)
         
       public:
         PMU(unsigned width):issuedcycle(0),recovery_cycles(0),pipeline_width(0),flag_start(0),TotalBlocks(8),block_index(0)
@@ -272,7 +289,6 @@ class FullO3CPU : public BaseO3CPU
                 issuedInsts.push_back(0);
                 committedInsts.push_back(0);
                 mispredicted_recover_cycle.push_back(0);
-                //frontend_bandwidth.push_back(0);
             }
         }
     };

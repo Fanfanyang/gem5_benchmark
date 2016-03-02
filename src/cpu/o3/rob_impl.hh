@@ -214,7 +214,9 @@ ROB<Impl>::insertInst(DynInstPtr &inst)
     assert(inst);
 
     robWrites++;
-
+    if (cpu->pmu.flag_start == 1)
+        cpu->pmu.robOperation[cpu->pmu.block_index][1]++;
+    
     DPRINTF(ROB, "Adding inst PC %s to the ROB.\n", inst->pcState());
 
     assert(numInstsInROB != numEntries);
@@ -271,7 +273,9 @@ void
 ROB<Impl>::retireHead(ThreadID tid)
 {
     robWrites++;
-
+    if (cpu->pmu.flag_start == 1)
+        cpu->pmu.robOperation[cpu->pmu.block_index][1]++;
+    
     assert(numInstsInROB > 0);
 
     // Get the head ROB instruction.
@@ -307,6 +311,12 @@ bool
 ROB<Impl>::isHeadReady(ThreadID tid)
 {
     robReads++;
+    //------------------------------------------------------------------------------
+    // PMU, power consumption mcpat, author: Fan Yang
+    //------------------------------------------------------------------------------
+    if (cpu->pmu.flag_start == 1)
+        cpu->pmu.robOperation[cpu->pmu.block_index][0]++;
+    
     if (threadEntries[tid] != 0) {
         return instList[tid].front()->readyToCommit();
     }
@@ -352,6 +362,12 @@ void
 ROB<Impl>::doSquash(ThreadID tid)
 {
     robWrites++;
+    //------------------------------------------------------------------------------
+    // PMU, power consumption mcpat, author: Fan Yang
+    //------------------------------------------------------------------------------
+    if (cpu->pmu.flag_start == 1)
+        cpu->pmu.robOperation[cpu->pmu.block_index][1]++;
+    
     DPRINTF(ROB, "[tid:%u]: Squashing instructions until [sn:%i].\n",
             tid, squashedSeqNum[tid]);
 
