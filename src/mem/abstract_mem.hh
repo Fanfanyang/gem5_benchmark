@@ -49,10 +49,13 @@
 #ifndef __ABSTRACT_MEMORY_HH__
 #define __ABSTRACT_MEMORY_HH__
 
+#include <vector>
+
 #include "mem/mem_object.hh"
 #include "params/AbstractMemory.hh"
 #include "sim/stats.hh"
 
+using namespace std;
 
 class System;
 
@@ -171,7 +174,14 @@ class AbstractMemory : public MemObject
     Stats::Formula bwWrite;
     /** Total bandwidth from this memory */
     Stats::Formula bwTotal;
-
+    
+    //------------------------------------------------------------------------------
+    // add memory usage, author: Fan Yang
+    //------------------------------------------------------------------------------
+    vector<uint8_t> mem_hist;
+    Stats::Vector mem_usage;
+    int mem_flag;           // 0:new, 1:old
+    
     /** Pointor to the System object.
      * This is used for getting the number of masters in the system which is
      * needed when registering stats

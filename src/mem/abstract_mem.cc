@@ -182,6 +182,20 @@ AbstractMemory::regStats()
     bwInstRead = bytesInstRead / simSeconds;
     bwWrite = bytesWritten / simSeconds;
     bwTotal = (bytesRead + bytesWritten) / simSeconds;
+    
+    //------------------------------------------------------------------------------
+    // add memory usage, author: Fan Yang
+    //------------------------------------------------------------------------------
+    
+    mem_usage
+        .init(system()->maxMasters())
+        .name(name() + ".mem_usage")
+        .desc("Number of bytes used in this memory")
+        .flags(total | nozero | nonan)
+        ;
+    for (int i = 0; i < system()->maxMasters(); i++) {
+        mem_usage.subname(i, system()->getMasterName(i));
+    }
 }
 
 AddrRange
@@ -376,6 +390,23 @@ AbstractMemory::access(PacketPtr pkt)
             memcpy(pkt->getPtr<uint8_t>(), hostAddr, pkt->getSize());
         TRACE_PACKET(pkt->req->isInstFetch() ? "IFetch" : "Read");
         numReads[pkt->req->masterId()]++;
+        
+        //------------------------------------------------------------------------------
+        // add memory usage, author: Fan Yang
+        //------------------------------------------------------------------------------
+        
+        mem_flag = 0;
+        for (int m_i=0;m_i<mem_hist.size();m_i++) {
+            if (pkt->getAddr() == mem_hist[m_i]) {
+                mem_flag = 1;
+                break;
+            }
+        }
+        if (!mem_flag) {
+            mem_hist.push_back(pkt->getAddr());
+            mem_usage[pkt->req->masterId()] += pkt->getSize();
+        }
+        
         bytesRead[pkt->req->masterId()] += pkt->getSize();
         if (pkt->req->isInstFetch())
             bytesInstRead[pkt->req->masterId()] += pkt->getSize();
@@ -396,6 +427,23 @@ AbstractMemory::access(PacketPtr pkt)
             assert(!pkt->req->isInstFetch());
             TRACE_PACKET("Write");
             numWrites[pkt->req->masterId()]++;
+            
+            //------------------------------------------------------------------------------
+            // add memory usage, author: Fan Yang
+            //------------------------------------------------------------------------------
+            
+            mem_flag = 0;
+            for (int m_i=0;m_i<mem_hist.size();m_i++) {
+                if (pkt->getAddr() == mem_hist[m_i]) {
+                    mem_flag = 1;
+                    break;
+                }
+            }
+            if (!mem_flag) {
+                mem_hist.push_back(pkt->getAddr());
+                mem_usage[pkt->req->masterId()] += pkt->getSize();
+            }
+            
             bytesWritten[pkt->req->masterId()] += pkt->getSize();
         }
     } else {
