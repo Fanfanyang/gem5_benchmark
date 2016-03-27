@@ -397,6 +397,7 @@ AbstractMemory::access(PacketPtr pkt)
         
         mem_flag = 0;
         for (int m_i=0;m_i<mem_hist.size();m_i++) {
+            //cout << pkt->getAddr() << " " << mem_hist[m_i] << " " << mem_hist.size() << endl;
             if (pkt->getAddr() == mem_hist[m_i]) {
                 mem_flag = 1;
                 break;

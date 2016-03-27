@@ -178,7 +178,7 @@ class AbstractMemory : public MemObject
     //------------------------------------------------------------------------------
     // add memory usage, author: Fan Yang
     //------------------------------------------------------------------------------
-    vector<uint8_t> mem_hist;
+    vector<Addr> mem_hist;
     Stats::Vector mem_usage;
     int mem_flag;           // 0:new, 1:old
     
