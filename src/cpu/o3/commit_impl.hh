@@ -1688,11 +1688,13 @@ DefaultCommit<Impl>::updateComInstStats(DynInstPtr &inst)
                 MemCycleMix[tid][1] += 0;
             }
             else {
+                /*
                 if (inst->isLoad())
                     pipeline_rountine = 2;
                 else if (inst->isStore())
                     pipeline_rountine = 1;
-            
+                */
+                pipeline_rountine = 1;
                 assert(inst->CompleteCycle - inst->IssuedCycle > pipeline_rountine);
             
                 MemCycleMix[tid][0] += (inst->IssuedCycle - inst->EnterIQCycle);
