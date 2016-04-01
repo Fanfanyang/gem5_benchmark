@@ -237,7 +237,32 @@ BaseCache::regStats()
     for (int i = 0; i < system->maxMasters(); i++) {
         overallMisses.subname(i, system->getMasterName(i));
     }
-
+    
+    //-------------------------------------------------------------------------------
+    // Memory locality, author: Fan Yang
+    //-------------------------------------------------------------------------------
+    
+    locality_spatial
+        .init(20)
+        .name(name() + ".locality_spatial.yang")
+        .desc("spatial locality")
+        .flags(total | pdf | dist)
+        ;
+    const char* spatial_name[] = {"<2bytes","<4bytes","<8bytes","<16bytes","<32bytes","<64bytes","<128bytes","<256bytes","<512bytes","<1024bytes","<2048bytes","<4096bytes","<8192bytes","<16384bytes","<32768bytes","<65536bytes","<131072bytes","<262144bytes","<524288bytes","others"};
+    for (int i=0;i<20;i++)
+        locality_spatial.subname(i,spatial_name[i]);
+    
+    locality_temporal
+        .init(12)
+        .name(name() + ".locality_temporal.yang")
+        .desc("temporal locality")
+        .flags(total | pdf | dist)
+        ;
+    const char* temporal_name[] = {"<2step","<4step","<8step","<16step","<32step","<64step","<128step","<256step","<512step","<1024step","<2048step","others"};
+    for (int i=0;i<12;i++)
+        locality_temporal.subname(i,temporal_name[i]);
+    
+    
     // Miss latency statistics
     for (int access_idx = 0; access_idx < MemCmd::NUM_MEM_CMDS; ++access_idx) {
         MemCmd cmd(access_idx);

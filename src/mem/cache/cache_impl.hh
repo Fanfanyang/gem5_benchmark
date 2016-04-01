@@ -64,6 +64,11 @@
 #include "mem/cache/cache.hh"
 #include "mem/cache/mshr.hh"
 #include "sim/sim_exit.hh"
+#include <math.h>
+#include <cmath>
+#include <iostream>
+
+using namespace std;
 
 template<class TagStore>
 Cache<TagStore>::Cache(const Params *p)
@@ -327,7 +332,56 @@ Cache<TagStore>::access(PacketPtr pkt, BlkType *&blk,
             pkt->req->isInstFetch() ? " (ifetch)" : "",
             pkt->getAddr(), pkt->isSecure() ? "s" : "ns",
             blk ? "hit" : "miss", blk ? blk->print() : "");
-
+    
+    //-------------------------------------------------------------------------------
+    // Memory locality, author: Fan Yang
+    //-------------------------------------------------------------------------------
+    
+    if (!pkt->req->isInstFetch()){
+        // spatial locality
+        Addr addr_current;
+        int index;
+        int i;
+        
+        if (pkt->getAddr() > addr_prev)
+            addr_current = pkt->getAddr() - addr_prev;
+        else
+            addr_current = addr_prev - pkt->getAddr();
+        
+        if (addr_current < 8)
+            index = 0;
+        else {
+            index = log2(addr_current/8);
+        }
+        
+        if (index < 19)
+            locality_spatial[index]++;
+        else
+            locality_spatial[19]++;
+        addr_prev = pkt->getAddr();
+        
+        // temporal locality
+        addr_current = pkt->getAddr();
+        search_flag = 0;
+        assert(addr_hist.size() <= max_hist);
+        
+        for (i=0;i<addr_hist.size();i++)
+            if (addr_hist[i] == addr_current) {
+                search_flag = 1;
+                index = log2(i+1);
+                break;
+            }
+        if (!search_flag){
+            index = 11;
+        }
+        locality_temporal[index]++;
+        
+        if (addr_hist.size() == max_hist)
+            addr_hist.pop_back();
+        addr_hist.insert(addr_hist.begin(),addr_current);
+    }
+    
+    
     // Writeback handling is special case.  We can write the block into
     // the cache without having a writeable copy (or any copy at all).
     if (pkt->cmd == MemCmd::Writeback) {

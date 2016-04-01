@@ -72,6 +72,8 @@
 #include "sim/sim_exit.hh"
 #include "sim/system.hh"
 
+using namespace std;
+
 class MSHR;
 /**
  * A basic cache interface. Implements some common functions for speed.
@@ -321,6 +323,17 @@ class BaseCache : public MemObject
     /** Number of misses for all accesses. */
     Stats::Formula overallMisses;
 
+    //-------------------------------------------------------------------------------
+    // Memory locality, author: Fan Yang
+    //-------------------------------------------------------------------------------
+    Addr addr_prev = 0;
+    Stats::Vector locality_spatial;
+    
+    vector<Addr> addr_hist;
+    int max_hist = 2048 - 1;
+    int search_flag;
+    Stats::Vector locality_temporal;
+    
     /**
      * Total number of cycles per thread/command spent waiting for a miss.
      * Used to calculate the average miss latency.
