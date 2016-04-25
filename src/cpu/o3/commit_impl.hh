@@ -48,6 +48,7 @@
 #include <set>
 #include <string>
 #include <iostream>
+#include <math.h>
 
 #include "arch/utility.hh"
 #include "base/loader/symtab.hh"
@@ -174,6 +175,13 @@ DefaultCommit<Impl>::DefaultCommit(O3CPU *_cpu, DerivO3CPUParams *params)
         squashAfterInst[tid] = NULL;
     }
     interrupt = NoFault;
+    
+    for (int i=0;i<256;i++)
+        seq_count[i] = 0;
+    for (int i=0;i<8;i++)
+        seq_bit[i] = 0;
+    for (int i=0;i<5;i++)
+        BHE[i] = 0;
 }
 
 template <class Impl>
@@ -313,6 +321,10 @@ DefaultCommit<Impl>::regStats()
     //--------------------------------------------------------------------
     // Instruction Type2, author: Fan Yang
     //--------------------------------------------------------------------
+    
+    BranchEntropy
+        .name(name() + ".BranchEntropy")
+        .desc("BranchEntropy");
     
     YangCommittedInsts
         .init(numThreads,3)
@@ -1204,6 +1216,71 @@ DefaultCommit<Impl>::commitInsts()
                     cout << "Commit pmubarrier! " << operands[0] << " " << operands[1] << endl;
                     cout << "flag: " << cpu->pmu.flag_start << " " << cpu->pmu.block_index << " " << operands[0] << " " << operands[1] << endl;
                     cout << "commit sn: " << head_inst->seqNum << endl;
+                }
+                
+                if (head_inst->isControl()&&head_inst->readPredicate()) {
+                    
+                    int i;
+                    for (i=0;i<9;i++)
+                        seq_bit[i] = seq_bit[i+1];
+                    if ((head_inst->readPredTaken()&&(!head_inst->mispredicted()))||((!head_inst->readPredTaken())&&head_inst->mispredicted()))
+                        seq_bit[9] = 1;
+                    else
+                        seq_bit[9] = 0;
+                    seq_index = 0;
+                    for (i=0;i<10;i++)
+                        seq_index += seq_bit[i]*pow(2,i);
+                    seq_count[seq_index]++;
+                    branch_total++;
+                    
+                    entropy_count++;
+                    if (entropy_count == 10000) {
+                        for (i=0;i<1024;i++) {
+                            seq_prob[i] = (float)seq_count[i]/branch_total;
+                            //cout << i << " " << seq_count[i] << " " << seq_prob[i] << endl;
+                        }
+                        branch_entropy_curr = 0;
+                        for (i=0;i<1024;i++) {
+                            if (seq_prob[i]) {
+                                branch_entropy_curr -= (seq_prob[i]*log2(seq_prob[i]));
+                                //cout << i << " " << seq_prob[i] << " " << branch_entropy_curr << endl;
+                            }
+                        }
+                        branch_history_entropy = (branch_entropy_prev - branch_entropy_curr);
+                        //cout << branch_history_entropy << " " << branch_entropy_prev << endl;
+                        
+                        for (i=0;i<4;i++)
+                            BHE[i] = BHE[i+1];
+                        BHE[4] = branch_history_entropy;
+                        
+                        BranchEntropy = 0;
+                        for (int i=0;i<5;i++) {
+                            if (BHE[i] > 0)
+                                BranchEntropy += BHE[i]/5;
+                            else
+                                BranchEntropy -= BHE[i]/5;
+                        }
+                        //BranchEntropy = BranchEntropy/5;
+                        
+                        branch_entropy_prev = branch_entropy_curr;
+                        entropy_count = 0;
+                    }
+                
+                    
+                    /*
+                    branch_total++;
+                    if ((head_inst->readPredTaken()&&(!head_inst->mispredicted()))||((!head_inst->readPredTaken())&&head_inst->mispredicted())) {
+                        branch_taken++;
+                    }
+                    else {
+                        branch_not++;
+                    }
+                    taken_rate = (float)branch_taken/branch_total;
+                    branch_entropy_curr = -taken_rate*log2(taken_rate) - (1-taken_rate)*log2(1-taken_rate);
+                    branch_history_entropy = branch_entropy_curr - branch_entropy_prev;
+                    cout << branch_history_entropy << " " << branch_entropy_curr << " " << taken_rate << " " << taken_rate*log2(taken_rate) << " " << (1-taken_rate)*log2(1-taken_rate) << endl;
+                    branch_entropy_prev = branch_entropy_curr;
+                     */
                 }
             
                 ++num_committed;

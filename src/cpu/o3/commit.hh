@@ -547,6 +547,29 @@ class DefaultCommit
     Tick access_count = 0;
     int pipeline_rountine = 0;
     
+    int entropy_count = 0;
+    int64_t seq_count[1024];
+    float seq_prob[1024];
+    int seq_index = 0;
+    int seq_bit[10];
+    float BHE[5];
+    
+    Tick branch_total = 0;
+    float branch_entropy_curr = 0;
+    float branch_entropy_prev = 0;
+    float branch_history_entropy = 0;
+    
+    /*
+    Tick branch_taken = 0;  // int
+    Tick branch_not = 0;
+    Tick branch_total = 0;
+    float taken_rate;
+    float branch_entropy_curr;
+    float branch_entropy_prev;
+    float branch_history_entropy;
+     */
+    
+    Stats::Scalar BranchEntropy;
     Stats::Vector2d YangCommittedInsts;
     //Stats::Vector2d CommitCycles;
     Stats::Vector2d YangAverageROBInsts;
@@ -560,3 +583,11 @@ class DefaultCommit
 };
 
 #endif // __CPU_O3_COMMIT_HH__
+
+
+
+
+
+
+
+

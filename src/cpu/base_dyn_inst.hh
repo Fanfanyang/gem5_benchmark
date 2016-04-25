@@ -50,6 +50,7 @@
 #include <list>
 #include <string>
 #include <queue>
+#include <iostream>
 
 #include "arch/utility.hh"
 #include "base/trace.hh"
@@ -66,6 +67,8 @@
 #include "sim/byteswap.hh"
 #include "sim/system.hh"
 #include "sim/tlb.hh"
+
+using namespace std;
 
 /**
  * @file
@@ -177,6 +180,7 @@ class BaseDynInst : public ExecContext, public RefCounted
      */
     std::queue<Result> instResult;
 
+  public:
     /** PC state for this instruction. */
     TheISA::PCState pc;
 
