@@ -176,9 +176,9 @@ DefaultCommit<Impl>::DefaultCommit(O3CPU *_cpu, DerivO3CPUParams *params)
     }
     interrupt = NoFault;
     
-    for (int i=0;i<256;i++)
+    for (int i=0;i<1024;i++)
         seq_count[i] = 0;
-    for (int i=0;i<8;i++)
+    for (int i=0;i<10;i++)
         seq_bit[i] = 0;
     for (int i=0;i<5;i++)
         BHE[i] = 0;
